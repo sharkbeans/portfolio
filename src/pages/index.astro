@@ -10,11 +10,13 @@ import { profile } from "../data/profile";
 import { socials } from "../data/socials";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
+const base = import.meta.env.BASE_URL;
+
 const recentPosts = (await getCollection("blog"))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
   .slice(0, 3)
   .map((entry) => ({
-    url: `/blog/${entry.id}/`,
+    url: `${base}blog/${entry.id}/`,
     title: entry.data.title,
     description: entry.data.description,
     tags: entry.data.tags,
@@ -49,7 +51,7 @@ const recentPosts = (await getCollection("blog"))
         </div>
         <p>
           The homepage only shows a short slice. The full archive lives on the{" "}
-          <a href="/projects">projects page</a>.
+          <a href={`${base}projects`}>projects page</a>.
         </p>
         <ProjectList projects={featuredProjects} />
       </section>
@@ -81,19 +83,19 @@ const recentPosts = (await getCollection("blog"))
         </div>
         <ul class="plain-list route-list">
           <li>
-            <a href="/projects">/projects</a> for the full archive and case studies.
+            <a href={`${base}projects`}>/projects</a> for the full archive and case studies.
           </li>
           <li>
-            <a href="/blog">/blog</a> for notes and project write-ups.
+            <a href={`${base}blog`}>/blog</a> for notes and project write-ups.
           </li>
           <li>
-            <a href="/uses">/uses</a> for software and hardware notes.
+            <a href={`${base}uses`}>/uses</a> for software and hardware notes.
           </li>
           <li>
-            <a href="/about">/about</a> for a short first-name-only introduction.
+            <a href={`${base}about`}>/about</a> for a short first-name-only introduction.
           </li>
           <li>
-            <a href="/lab">/lab</a> for smaller unfinished experiments.
+            <a href={`${base}lab`}>/lab</a> for smaller unfinished experiments.
           </li>
         </ul>
       </section>

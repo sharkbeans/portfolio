@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="404 | sharkbeans" description="The page could not be found." noIndex={true}>
@@ -8,8 +10,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <h1>That page wandered off the map.</h1>
     <p>The content is missing, renamed, or not published yet.</p>
     <p>
-      Try the <a href="/">homepage</a>, the <a href="/projects">projects archive</a>, or the{" "}
-      <a href="/blog">blog</a>.
+      Try the <a href={base}>homepage</a>, the <a href={`${base}projects`}>projects archive</a>, or the{" "}
+      <a href={`${base}blog`}>blog</a>.
     </p>
   </div>
 </BaseLayout>

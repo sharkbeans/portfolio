@@ -1,22 +1,23 @@
 ---
 import { profile } from "../data/profile";
 
+const base = import.meta.env.BASE_URL;
 const pathname = Astro.url.pathname;
-const pageLabel = pathname === "/" ? "home" : pathname.replace(/^\/|\/$/g, "");
+const pageLabel = pathname === base ? "home" : pathname.slice(base.length).replace(/\/$/, "");
 
 const navItems = [
-  { href: "/", label: "~" },
-  { href: "/projects", label: "projects" },
-  { href: "/blog", label: "blog" },
-  { href: "/uses", label: "uses" },
-  { href: "/about", label: "about" },
-  { href: "/lab", label: "lab" },
+  { href: base, label: "~" },
+  { href: `${base}projects`, label: "projects" },
+  { href: `${base}blog`, label: "blog" },
+  { href: `${base}uses`, label: "uses" },
+  { href: `${base}about`, label: "about" },
+  { href: `${base}lab`, label: "lab" },
 ];
 ---
 
 <header class="site-header">
   <div class="site-header__inner">
-    <a class="site-brand" href="/">
+    <a class="site-brand" href={base}>
       <span class="site-brand__handle">{profile.handle}</span>
       <span class="site-brand__separator">~</span>
       <span class="site-brand__label">{pageLabel}</span>
@@ -27,8 +28,8 @@ const navItems = [
         {
           navItems.map((item) => {
             const isActive =
-              item.href === "/"
-                ? pathname === "/"
+              item.href === base
+                ? pathname === base
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (

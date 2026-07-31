@@ -6,6 +6,7 @@ interface Props {
 }
 
 const { projects } = Astro.props;
+const base = import.meta.env.BASE_URL;
 ---
 
 <ul class="project-list">
@@ -13,7 +14,7 @@ const { projects } = Astro.props;
     projects.map((project) => (
       <li class="project-list__item">
         <div class="project-list__heading">
-          <a href={`/projects/${project.slug}`}>{project.title}</a>
+          <a href={`${base}projects/${project.slug}`}>{project.title}</a>
           {project.status ? <span class="meta-chip">{project.status}</span> : null}
         </div>
         <p>{project.description}</p>

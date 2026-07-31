@@ -56,6 +56,8 @@ export const journeySections: JourneySection[] = [
   },
 ];
 
+const base = import.meta.env.BASE_URL;
+
 export const journeyInteractables: JourneyInteractable[] = [
   {
     id: "objekt-tools",
@@ -63,7 +65,7 @@ export const journeyInteractables: JourneyInteractable[] = [
     title: "objekt.my",
     description:
       "A collector-focused toolset for Cosmo Objekt trading, lists, collection tracking, proofshots, and custom card generation.",
-    href: "/projects/objekt-tools",
+    href: `${base}projects/objekt-tools`,
     ctaLabel: "Open project page",
     prompt: "Press E to inspect objekt.my",
     progress: 0.29,
@@ -75,7 +77,7 @@ export const journeyInteractables: JourneyInteractable[] = [
     title: "MyBeli",
     description:
       "A public-first catalog and inventory workflow for small shops that have outgrown constantly edited PDF catalogs.",
-    href: "/projects/mybeli",
+    href: `${base}projects/mybeli`,
     ctaLabel: "Open project page",
     prompt: "Press E to inspect MyBeli",
     progress: 0.33,
@@ -87,7 +89,7 @@ export const journeyInteractables: JourneyInteractable[] = [
     title: "Blog archive",
     description:
       "Development notes, project write-ups, and placeholder drafts for posts that still need to be written.",
-    href: "/blog",
+    href: `${base}blog`,
     ctaLabel: "Open blog",
     prompt: "Press E to open the blog archive",
     progress: 0.57,
@@ -99,7 +101,7 @@ export const journeyInteractables: JourneyInteractable[] = [
     title: "Uses",
     description:
       "An editable list of software, development tools, desktop setup, and hardware notes.",
-    href: "/uses",
+    href: `${base}uses`,
     ctaLabel: "Open uses page",
     prompt: "Press E to inspect the tool bench",
     progress: 0.76,
@@ -111,7 +113,7 @@ export const journeyInteractables: JourneyInteractable[] = [
     title: "About",
     description:
       "A short personal page with a first-name introduction and links to public profiles.",
-    href: "/about",
+    href: `${base}about`,
     ctaLabel: "Open about page",
     prompt: "Press E to read the notice board",
     progress: 0.83,

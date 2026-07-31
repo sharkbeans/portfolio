@@ -9,6 +9,7 @@ import { profile } from "./src/data/profile";
 
 export default defineConfig({
   site: profile.site,
+  base: "/portfolio/",
   output: "static",
   integrations: [mdx(), sitemap()],
   markdown: {

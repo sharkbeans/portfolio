@@ -7,6 +7,8 @@ const project = projects.find((entry) => entry.slug === "mybeli");
 if (!project) {
   throw new Error("Missing project data for mybeli");
 }
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <ProjectLayout project={project}>
@@ -52,7 +54,7 @@ if (!project) {
   <figure>
     <img
       class="frame-image"
-      src="/assets/screenshots/mybeli-dashboard.svg"
+      src={`${base}assets/screenshots/mybeli-dashboard.svg`}
       alt="Placeholder dashboard panel for MyBeli showing products, stock updates, and catalog publishing."
     />
     <figcaption>
@@ -64,7 +66,7 @@ if (!project) {
   <figure>
     <img
       class="frame-image"
-      src="/assets/screenshots/mybeli-architecture.svg"
+      src={`${base}assets/screenshots/mybeli-architecture.svg`}
       alt="Placeholder architecture diagram showing branded shop subdomains pointing into a shared multi-tenant application."
     />
     <figcaption>

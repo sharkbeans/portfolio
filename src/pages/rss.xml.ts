@@ -4,6 +4,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import { profile } from "../data/profile";
 
 export async function GET(context: { site: URL }) {
+  const base = import.meta.env.BASE_URL;
   const allPosts: CollectionEntry<"blog">[] = await getCollection("blog");
   const posts = allPosts
     .filter((entry) => !entry.data.draft)
@@ -17,7 +18,7 @@ export async function GET(context: { site: URL }) {
       title: entry.data.title,
       description: entry.data.description,
       pubDate: entry.data.pubDate,
-      link: `/blog/${entry.id}/`,
+      link: `${base}blog/${entry.id}/`,
     })),
   });
 }
