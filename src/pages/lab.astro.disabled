@@ -6,10 +6,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="stack">
     <header class="page-header">
       <p class="eyebrow">lab</p>
-      <h1>Lab notes</h1>
+      <h1>Experiments</h1>
       <p class="lede">
-        Smaller experiments live here when they are interesting enough to keep but not finished
-        enough to call full projects.
+        Smaller builds that aren't full projects yet.
       </p>
     </header>
 

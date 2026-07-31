@@ -7,7 +7,7 @@ export const profile = {
   intro:
     "I build practical web products, collector tools, and unusual browser experiences.",
   homeBlurb:
-    "This is a small personal home for project notes, works in progress, the tools I use, and experiments that feel worth keeping around.",
+    "Project notes, work in progress, my dev setup, and a few smaller experiments.",
   aboutIntro:
     "I like building small web systems that stay understandable, useful, and a little bit playful.",
   emailLabel: "junyitan2003@gmail.com",

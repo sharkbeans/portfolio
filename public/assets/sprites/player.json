@@ -1,60 +1,28 @@
 {
   "file": "player.png",
-  "frameWidth": 16,
-  "frameHeight": 16,
-  "sliceX": 4,
-  "sliceY": 4,
-  "directions": [
-    "down",
-    "left",
-    "right",
-    "up"
+  "frameWidth": 50,
+  "frameHeight": 60,
+  "sliceX": 8,
+  "sliceY": 8,
+  "rows": [
+    "idle-right (7 frames, col 7 unused)",
+    "idle-left (mirror)",
+    "walk-right (5 frames, cols 5-7 unused)",
+    "walk-left (mirror)",
+    "crouch-right (4 frames, cols 4-7 unused)",
+    "crouch-left (mirror)",
+    "aim/fire-right (8 frames: 0-3 raise, 4 aimed, 5-6 flash/recoil, 7 settle)",
+    "aim/fire-left (mirror)"
   ],
   "anims": {
-    "idle-down": {
-      "from": 0,
-      "to": 0,
-      "loop": false
-    },
-    "walk-down": {
-      "from": 0,
-      "to": 3,
-      "loop": true,
-      "speed": 8
-    },
-    "idle-left": {
-      "from": 4,
-      "to": 4,
-      "loop": false
-    },
-    "walk-left": {
-      "from": 4,
-      "to": 7,
-      "loop": true,
-      "speed": 8
-    },
-    "idle-right": {
-      "from": 8,
-      "to": 8,
-      "loop": false
-    },
-    "walk-right": {
-      "from": 8,
-      "to": 11,
-      "loop": true,
-      "speed": 8
-    },
-    "idle-up": {
-      "from": 12,
-      "to": 12,
-      "loop": false
-    },
-    "walk-up": {
-      "from": 12,
-      "to": 15,
-      "loop": true,
-      "speed": 8
-    }
+    "idle-r": { "from": 0, "to": 6, "loop": true, "speed": 4 },
+    "idle-l": { "from": 8, "to": 14, "loop": true, "speed": 4 },
+    "walk-r": { "from": 16, "to": 20, "loop": true, "speed": 8 },
+    "walk-l": { "from": 24, "to": 28, "loop": true, "speed": 8 },
+    "crouch-r": { "from": 35, "to": 35, "loop": false },
+    "crouch-l": { "from": 43, "to": 43, "loop": false },
+    "fire-r": { "from": 52, "to": 54, "loop": false, "speed": 14 },
+    "fire-l": { "from": 60, "to": 62, "loop": false, "speed": 14 }
   },
-  "license": "Original placeholder art generated for this project. Public domain / CC0 — replace freely."
+  "provenance": "Frames cropped directly from a fan-made 'Solid Snake' sprite sheet credited to Shinkenmaster (Super Smash Flash community), kept locally at reference/solid-snake-shinkenmaster-sheet.png (gitignored, not redistributed as-is). down/up directions alias the right/left profile rows since the source sheet (a side-scroller moveset) has no front/back-facing frames. No explicit reuse license was found on the sheet — used here at the site owner's explicit direction and risk, not under a confirmed open license."
 }

@@ -31,17 +31,18 @@ const recentPosts = (await getCollection("blog"))
 
   <div id="world-content" class="world-stage">
     <div class="world-flow">
-      <section class="world-block" id="home-intro" data-world-spawn="intro">
-        <p class="eyebrow">~</p>
+      <section class="world-block" id="home-intro">
+        <p class="eyebrow" data-world-solid>home</p>
         <h1 data-world-solid>{profile.handle.toUpperCase()}</h1>
-        <p class="lede">{profile.introHeading}</p>
-        <p>{profile.intro}</p>
-        <p>{profile.homeBlurb}</p>
-        <p class="inline-links">
+        <p class="lede" data-world-solid>{profile.introHeading}</p>
+        <p data-world-solid>{profile.intro}</p>
+        <p data-world-solid>{profile.homeBlurb}</p>
+        <p class="inline-links" data-world-solid>
           <a href="#selected-projects">selected projects</a>
           <a href="#recent-writing">recent writing</a>
           <a href="#public-links">public links</a>
         </p>
+        <span data-world-spawn="intro" aria-hidden="true"></span>
       </section>
 
       <hr data-world-solid />
@@ -99,7 +100,7 @@ const recentPosts = (await getCollection("blog"))
           <h2 class="section-title">Recent writing</h2>
         </div>
         <span data-world-spawn="writing" aria-hidden="true"></span>
-        <p>
+        <p data-world-solid>
           The archive is intentionally simple. Right now the posts are visible draft placeholders
           rather than pretending to be finished essays.
         </p>
@@ -112,7 +113,7 @@ const recentPosts = (await getCollection("blog"))
           <h2 class="section-title">Tools &amp; setup</h2>
         </div>
         <span data-world-spawn="uses" aria-hidden="true"></span>
-        <p>
+        <p data-world-solid>
           Software, editors, and hardware notes, kept as visible placeholders until every field is
           filled in. See the <a href={`${base}uses`}>full uses page</a>.
         </p>
@@ -134,7 +135,7 @@ const recentPosts = (await getCollection("blog"))
           <p class="eyebrow">continue</p>
           <h2 class="section-title">Elsewhere on the site</h2>
         </div>
-        <ul class="plain-list route-list">
+        <ul class="plain-list route-list" data-world-solid>
           <li>
             <a href={`${base}projects`}>/projects</a> for the full archive and case studies.
           </li>
@@ -147,9 +148,6 @@ const recentPosts = (await getCollection("blog"))
           <li>
             <a href={`${base}about`} data-world-interactable="about">/about</a> for a short
             first-name-only introduction.
-          </li>
-          <li>
-            <a href={`${base}lab`}>/lab</a> for smaller unfinished experiments.
           </li>
         </ul>
       </section>

@@ -6,12 +6,11 @@ const pathname = Astro.url.pathname;
 const pageLabel = pathname === base ? "home" : pathname.slice(base.length).replace(/\/$/, "");
 
 const navItems = [
-  { href: base, label: "~" },
+  { href: base, label: "home" },
   { href: `${base}projects`, label: "projects" },
   { href: `${base}blog`, label: "blog" },
   { href: `${base}uses`, label: "uses" },
   { href: `${base}about`, label: "about" },
-  { href: `${base}lab`, label: "lab" },
 ];
 ---
 
@@ -19,7 +18,7 @@ const navItems = [
   <div class="site-header__inner">
     <a class="site-brand" href={base}>
       <span class="site-brand__handle">{profile.handle}</span>
-      <span class="site-brand__separator">~</span>
+      <span class="site-brand__separator">&middot;</span>
       <span class="site-brand__label">{pageLabel}</span>
     </a>
 

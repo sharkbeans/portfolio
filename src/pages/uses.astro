@@ -7,10 +7,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="stack">
     <header class="page-header">
       <p class="eyebrow">uses</p>
-      <h1>Stuff I use</h1>
+      <h1>Software &amp; hardware</h1>
       <p class="lede">
-        This page follows the usual <code>/uses</code> spirit: practical notes, small tables, and
-        obvious placeholders where the final details still need to be filled in.
+        What I'm currently using, updated as it changes. A few entries are still placeholders.
       </p>
     </header>
 
@@ -26,7 +25,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
               {section.entries.map((entry) => (
                 <tr>
                   <th>{entry.name}</th>
-                  <td>{entry.detail}</td>
+                  <td>
+                    {entry.href ? (
+                      <a href={entry.href} target="_blank" rel="noreferrer">
+                        {entry.detail}
+                      </a>
+                    ) : (
+                      entry.detail
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

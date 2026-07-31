@@ -1,13 +1,13 @@
 :root {
-  --bg: #0b0c0d;
-  --bg-elevated: #131516;
-  --bg-strong: #1c1f20;
+  --bg: #101720;
+  --bg-elevated: #1d1f21;
+  --bg-strong: #212a37;
   --text: #f0ece1;
-  --muted: #8b9089;
+  --muted: #8b96a3;
   --border: #33383a;
-  --accent: #7cff6b;
-  --accent-soft: #1c2e18;
-  --accent-strong: #b6ff9e;
+  --accent: #f2b84b;
+  --accent-soft: #3a2e18;
+  --accent-strong: #ffd479;
   --accent-cyan: #6be3ff;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   --measure: 68ch;
@@ -21,6 +21,8 @@
   --font-display:
     "Archivo Black", "Arial Narrow", "Helvetica Neue Condensed", "Helvetica Neue", Arial, sans-serif;
   --font-body:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   --font-mono: "IBM Plex Mono", "Azeret Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-pixel: "Geist Pixel", var(--font-mono);
 }

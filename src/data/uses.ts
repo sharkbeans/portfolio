@@ -1,6 +1,7 @@
 export type UsesEntry = {
   name: string;
   detail: string;
+  href?: string;
 };
 
 export type UsesSection = {
@@ -19,41 +20,66 @@ export const usesSections: UsesSection[] = [
       { name: "Browser", detail: "Firefox" },
       { name: "Editor", detail: "VS Code" },
       { name: "Version control", detail: "Git" },
-      { name: "Notes", detail: "[ADD NOTES APP]" },
+      // { name: "Notes", detail: "[ADD NOTES APP]" },
     ],
   },
   {
     title: "Development",
     entries: [
-      { name: "Frontend", detail: "TypeScript, JavaScript, Astro" },
-      { name: "Other stack", detail: "Elixir" },
+      { name: "Frontend", detail: "TypeScript, Next.js, React, Astro" },
+      { name: "Backend", detail: "Elixir, Phoenix, Phoenix LiveView, Ecto" },
+      { name: "Database / ORM", detail: "PostgreSQL, Drizzle ORM" },
+      { name: "Styling", detail: "Tailwind CSS" },
       { name: "Game-flavored web experiments", detail: "KAPLAY" },
-      { name: "Terminal", detail: "[ADD TERMINAL]" },
-      { name: "Fonts", detail: "[ADD CODING FONT]" },
+      { name: "Terminal", detail: "VS Code integrated terminal" },
+      { name: "Fonts", detail: "MonoLisa", href: "https://www.monolisa.dev/" },
     ],
   },
-  {
-    title: "Desktop",
-    entries: [
-      { name: "Windowing / desktop", detail: "[ADD DESKTOP SETUP]" },
-      { name: "Shell", detail: "[ADD SHELL]" },
-      { name: "Dotfiles", detail: "[ADD PUBLIC DOTFILES URL]" },
-    ],
-  },
+  // {
+  //   title: "Desktop",
+  //   entries: [
+  //     { name: "Windowing / desktop", detail: "[ADD DESKTOP SETUP]" },
+  //     { name: "Shell", detail: "[ADD SHELL]" },
+  //     { name: "Dotfiles", detail: "[ADD PUBLIC DOTFILES URL]" },
+  //   ],
+  // },
   {
     title: "Hardware",
     entries: [
-      { name: "Main machine", detail: "[ADD HARDWARE DETAILS]" },
-      { name: "Keyboard", detail: "[ADD KEYBOARD DETAILS]" },
-      { name: "Audio", detail: "[ADD AUDIO DETAILS]" },
+      { name: "Motherboard", detail: "Gigabyte B450M S2H" },
+      { name: "CPU", detail: "Ryzen 7 5700X" },
+      { name: "GPU", detail: "ASUS Dual RTX 5070 OC" },
+      { name: "RAM", detail: "Corsair Vengeance 32GB (16x2) 3600MHz" },
+      { name: "Storage", detail: "1TB Konka M.2 K580 SSD" },
+      { name: "Cooling", detail: "Cooler Master MasterLiquid ML240L V2 RGB" },
     ],
   },
+  // {
+  //   title: "Hardware — PC 2",
+  //   entries: [
+  //     { name: "Motherboard", detail: "[ADD MOTHERBOARD]" },
+  //     { name: "CPU", detail: "[ADD CPU]" },
+  //     { name: "GPU", detail: "[ADD GPU]" },
+  //     { name: "RAM", detail: "[ADD RAM]" },
+  //     { name: "Storage", detail: "[ADD STORAGE]" },
+  //     { name: "Cooling", detail: "[ADD COOLING]" },
+  //   ],
+  // },
   {
-    title: "Other tools",
+    title: "Peripherals",
     entries: [
-      { name: "Camera / imaging", detail: "[ADD TOOL]" },
-      { name: "Collector workflow", detail: "[ADD TOOL]" },
-      { name: "General utility", detail: "[ADD TOOL]" },
+      { name: "Keyboard", detail: "Mad Lions 68HE (non-RGB), Aula F75" },
+      { name: "Mouse", detail: "Attack Shark X3" },
+      { name: "Monitors", detail: "BenQ Zowie XL2546K (primary), Acer KG241 (secondary)" },
+      { name: "Audio", detail: "Sony earbuds (bundled with the Xperia Z1)" },
     ],
   },
+  // {
+  //   title: "Other tools",
+  //   entries: [
+  //     { name: "Camera / imaging", detail: "[ADD TOOL]" },
+  //     { name: "Collector workflow", detail: "[ADD TOOL]" },
+  //     { name: "General utility", detail: "[ADD TOOL]" },
+  //   ],
+  // },
 ];

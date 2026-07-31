@@ -17,7 +17,7 @@ html[data-world-reading-mode="true"] .world-canvas {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.2rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
   font-size: 0.85rem;
   color: var(--muted);
 }
@@ -42,7 +42,7 @@ html[data-world-reading-mode="true"] .world-canvas {
   color: var(--text);
   padding: 0.4rem 0.7rem;
   font: inherit;
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
   cursor: pointer;
 }
 
@@ -71,7 +71,7 @@ html[data-world-reading-mode="true"] .world-canvas {
   left: -1.1em;
   top: 0;
   color: var(--accent);
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
 }
 
 .world-dialog {
@@ -117,9 +117,9 @@ html[data-world-reading-mode="true"] .world-canvas {
   margin: 0;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
-  background: rgba(11, 12, 13, 0.85);
+  background: rgba(16, 23, 32, 0.85);
   color: var(--accent-cyan);
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
   font-size: 0.75rem;
   line-height: 1.4;
   pointer-events: none;

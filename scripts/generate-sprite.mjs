@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 /**
+ * NOTE: public/assets/sprites/player.png is currently sourced from a cropped
+ * fan sprite sheet (see player.json's "provenance" field), not from this
+ * script. Re-running this file will overwrite that with the procedural art
+ * described below — don't run it unless that's what you want.
+ *
  * Generates an original, license-clean top-down player sprite sheet as a raw
  * RGBA PNG (no image dependency — hand-rolled PNG encoding via node:zlib).
+ * Chibi design inspired by Solid Snake's silhouette (blue-gray tactical
+ * suit, near-black gloves/boots/harness, brown hair + dark headband) —
+ * original pixel art, not traced or copied from any Konami or fan asset.
  *
  * Layout: 4 columns (walk frames) x 4 rows (down, left, right, up), 16x16px
  * per frame, 64x64px sheet total. Frame 0 in each row doubles as the idle
@@ -25,12 +33,16 @@ const ROWS = DIRECTIONS.length;
 const WIDTH = FRAME * COLS;
 const HEIGHT = FRAME * ROWS;
 
-const OUTLINE = [26, 26, 26, 255];
-const SKIN = [232, 195, 158, 255];
-const SHIRT = [124, 255, 107, 255];
-const SHIRT_SHADE = [92, 199, 79, 255];
-const PANTS = [51, 56, 58, 255];
-const HAIR = [43, 47, 49, 255];
+const OUTLINE = [8, 8, 8, 255];
+const SKIN = [222, 178, 138, 255];
+const SHIRT = [85, 91, 104, 255]; // blue-gray tactical suit
+const SHIRT_SHADE = [60, 66, 72, 255];
+const VEST = [39, 43, 50, 255]; // dark harness straps across the chest
+const PANTS = [28, 30, 34, 255]; // near-black tactical trousers
+const BOOT = [16, 17, 19, 255]; // near-black boot, slightly darker for cuff contrast
+const HAIR = [122, 77, 39, 255]; // brown hair
+const BANDANA = [51, 34, 20, 255]; // dark brown headband
+const GLOVE = [30, 33, 37, 255]; // near-black tactical gloves
 const EYE = [17, 17, 17, 255];
 
 const buffer = new Uint8Array(WIDTH * HEIGHT * 4);
@@ -65,25 +77,35 @@ function blockWithOutline(ox, oy, x, y, w, h, color) {
 function drawFrame(ox, oy, direction, walkPhase) {
   const legShift = walkPhase === 1 ? -1 : walkPhase === 3 ? 1 : 0;
 
-  // Legs (drawn first, body sits on top)
-  blockWithOutline(ox, oy, 5, 12 + Math.max(0, -legShift), 2, 3, PANTS);
-  blockWithOutline(ox, oy, 9, 12 + Math.max(0, legShift), 2, 3, PANTS);
+  // Legs (drawn first, body sits on top), with a tan boot cuff at the ankle
+  const leftLegY = 12 + Math.max(0, -legShift);
+  const rightLegY = 12 + Math.max(0, legShift);
+  blockWithOutline(ox, oy, 5, leftLegY, 2, 3, PANTS);
+  blockWithOutline(ox, oy, 9, rightLegY, 2, 3, PANTS);
+  fillRect(ox, oy, 5, leftLegY + 2, 2, 1, BOOT);
+  fillRect(ox, oy, 9, rightLegY + 2, 2, 1, BOOT);
 
-  // Body / shirt, shaded when facing sideways
+  // Body / sneaking suit, shaded when facing sideways
   const bodyColor = direction === "left" || direction === "right" ? SHIRT_SHADE : SHIRT;
   blockWithOutline(ox, oy, 4, 7, 8, 5, bodyColor);
+  // Tan chest pouch
+  fillRect(ox, oy, 6, 9, 4, 2, VEST);
 
-  // Arms: swing opposite to the forward leg
+  // Arms: swing opposite to the forward leg (fingerless gloves)
   const armShift = walkPhase === 1 ? 1 : walkPhase === 3 ? -1 : 0;
-  blockWithOutline(ox, oy, 3, 8 + Math.max(0, armShift), 1, 3, SKIN);
-  blockWithOutline(ox, oy, 12, 8 + Math.max(0, -armShift), 1, 3, SKIN);
+  blockWithOutline(ox, oy, 3, 8 + Math.max(0, armShift), 1, 3, GLOVE);
+  blockWithOutline(ox, oy, 12, 8 + Math.max(0, -armShift), 1, 3, GLOVE);
 
   // Head + face, direction-dependent
   if (direction === "up") {
     blockWithOutline(ox, oy, 4, 1, 8, 6, HAIR);
+    // Bandana tails trailing at the nape
+    fillRect(ox, oy, 6, 7, 1, 2, BANDANA);
+    fillRect(ox, oy, 9, 7, 1, 2, BANDANA);
   } else if (direction === "down") {
     blockWithOutline(ox, oy, 4, 1, 8, 3, HAIR);
     blockWithOutline(ox, oy, 5, 3, 6, 4, SKIN);
+    fillRect(ox, oy, 5, 2, 6, 1, BANDANA);
     setPixel(ox + 6, oy + 5, EYE);
     setPixel(ox + 9, oy + 5, EYE);
   } else {
@@ -91,6 +113,7 @@ function drawFrame(ox, oy, direction, walkPhase) {
     const dx = direction === "left" ? -1 : 1;
     blockWithOutline(ox, oy, 4 + dx, 1, 8, 3, HAIR);
     blockWithOutline(ox, oy, 5 + dx, 3, 6, 4, SKIN);
+    fillRect(ox, oy, 5 + dx, 2, 6, 1, BANDANA);
     setPixel(ox + (direction === "left" ? 6 : 9) + dx, oy + 5, EYE);
   }
 }
@@ -181,7 +204,8 @@ const metadata = {
   sliceY: ROWS,
   directions: DIRECTIONS,
   anims,
-  license: "Original placeholder art generated for this project. Public domain / CC0 — replace freely.",
+  license:
+    "Original pixel art generated for this project (silhouette inspired by Solid Snake, not traced/copied from any Konami asset). Public domain / CC0 — replace freely.",
 };
 
 writeFileSync(join(outDir, "player.json"), JSON.stringify(metadata, null, 2));

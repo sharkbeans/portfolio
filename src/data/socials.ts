@@ -15,12 +15,12 @@ export const socials: SocialLink[] = [
     label: "Email",
     note: profile.emailLabel,
   },
-  {
-    label: "LinkedIn",
-    note: "[ADD PUBLIC PROFILE URL]",
-  },
-  {
-    label: "Other profile",
-    note: "[ADD PUBLIC PROFILE URL]",
-  },
+  // {
+  //   label: "LinkedIn",
+  //   note: "[ADD PUBLIC PROFILE URL]",
+  // },
+  // {
+  //   label: "Other profile",
+  //   note: "[ADD PUBLIC PROFILE URL]",
+  // },
 ];

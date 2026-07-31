@@ -52,7 +52,7 @@ export const projects: Project[] = [
       "A placeholder lab experiment for browser-based retro camera filters and CCD-style image processing.",
     sourceVisibility: "private",
     status: "Placeholder",
-    technologies: ["[ADD TECHNOLOGY]"],
+    technologies: [],
     featured: false,
   },
 ];

@@ -2,6 +2,7 @@ import type { Axes, Direction, PlayerSnapshot, SolidRect, WorldRect } from "./wo
 
 const BASE_SPEED = 300; // document px/sec
 const RUN_SPEED = 520;
+const CROUCH_SPEED = 150;
 const HITBOX_HALF_WIDTH = 10;
 const HITBOX_HEIGHT = 12;
 
@@ -30,6 +31,7 @@ export class PlayerController {
   facing: Direction = "down";
   isMoving = false;
   isRunning = false;
+  isCrouching = false;
 
   teleport(x: number, y: number) {
     this.x = x;
@@ -59,13 +61,21 @@ export class PlayerController {
     }
   }
 
-  tick(dt: number, axes: Axes, running: boolean, solids: readonly SolidRect[], bounds: WorldRect) {
+  tick(
+    dt: number,
+    axes: Axes,
+    running: boolean,
+    crouching: boolean,
+    solids: readonly SolidRect[],
+    bounds: WorldRect,
+  ) {
     const magnitude = Math.hypot(axes.horizontal, axes.vertical);
     this.isMoving = magnitude > 0;
-    this.isRunning = running;
+    this.isCrouching = crouching;
+    this.isRunning = running && !crouching;
 
     if (this.isMoving) {
-      const speed = running ? RUN_SPEED : BASE_SPEED;
+      const speed = crouching ? CROUCH_SPEED : this.isRunning ? RUN_SPEED : BASE_SPEED;
       const nx = axes.horizontal / magnitude;
       const ny = axes.vertical / magnitude;
 
