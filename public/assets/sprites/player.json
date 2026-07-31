@@ -1,0 +1,60 @@
+{
+  "file": "player.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "sliceX": 4,
+  "sliceY": 4,
+  "directions": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "anims": {
+    "idle-down": {
+      "from": 0,
+      "to": 0,
+      "loop": false
+    },
+    "walk-down": {
+      "from": 0,
+      "to": 3,
+      "loop": true,
+      "speed": 8
+    },
+    "idle-left": {
+      "from": 4,
+      "to": 4,
+      "loop": false
+    },
+    "walk-left": {
+      "from": 4,
+      "to": 7,
+      "loop": true,
+      "speed": 8
+    },
+    "idle-right": {
+      "from": 8,
+      "to": 8,
+      "loop": false
+    },
+    "walk-right": {
+      "from": 8,
+      "to": 11,
+      "loop": true,
+      "speed": 8
+    },
+    "idle-up": {
+      "from": 12,
+      "to": 12,
+      "loop": false
+    },
+    "walk-up": {
+      "from": 12,
+      "to": 15,
+      "loop": true,
+      "speed": 8
+    }
+  },
+  "license": "Original placeholder art generated for this project. Public domain / CC0 — replace freely."
+}

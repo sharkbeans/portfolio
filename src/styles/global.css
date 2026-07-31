@@ -1,19 +1,36 @@
 @import "./tokens.css";
 @import "./prose.css";
+@import "./world.css";
 
 html {
   scroll-behavior: auto;
-  background:
-    radial-gradient(circle at top right, rgba(13, 103, 90, 0.08), transparent 28%),
-    linear-gradient(180deg, var(--bg), var(--bg-elevated));
+  background: var(--bg);
 }
 
 body {
+  position: relative;
   margin: 0;
   color: var(--text);
   background: transparent;
   font-family: var(--font-body);
   line-height: 1.7;
+}
+
+/* Very subtle static scanline texture. Low enough contrast to never affect
+   readability; intentionally not animated. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
 }
 
 *,
@@ -80,6 +97,8 @@ kbd {
 .site-header,
 .site-footer,
 .site-main {
+  position: relative;
+  z-index: 1;
   width: min(72rem, calc(100vw - 2rem));
   margin: 0 auto;
 }
@@ -146,7 +165,7 @@ kbd {
 }
 
 .site-nav a[aria-current="page"] {
-  color: var(--text);
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -168,6 +187,9 @@ kbd {
 .section-title,
 .home-intro h1 {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.01em;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.05;
 }
@@ -177,6 +199,7 @@ kbd {
   font-size: 0.92rem;
   letter-spacing: 0.05em;
   text-transform: lowercase;
+  color: var(--accent);
 }
 
 .lede {
@@ -211,7 +234,7 @@ kbd {
 .project-list__item {
   padding: var(--space-3);
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  background: var(--bg-elevated);
   box-shadow: var(--shadow);
 }
 

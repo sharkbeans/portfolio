@@ -1,0 +1,127 @@
+.world-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+html[data-world-reading-mode="true"] .world-canvas {
+  display: none;
+}
+
+.world-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.world-controls__hint {
+  margin: 0;
+}
+
+.world-controls__hint kbd {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 0.2rem;
+  background: var(--bg-strong);
+  color: var(--text);
+  font-size: 0.82em;
+}
+
+.world-toggle {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.world-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.world-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* Applied by InteractionSystem to the real DOM element nearest the player.
+   Never relies on color alone: adds an outline plus a bracket marker. */
+[data-world-highlight="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  position: relative;
+}
+
+[data-world-highlight="true"]::before {
+  content: "›";
+  position: absolute;
+  left: -1.1em;
+  top: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.world-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+}
+
+.world-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.world-dialog__chrome {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.world-dialog__chrome button {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+.world-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+}
+
+.world-debug {
+  position: fixed;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 41;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(11, 12, 13, 0.85);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  pointer-events: none;
+  white-space: pre;
+}

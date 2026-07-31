@@ -1,12 +1,44 @@
 ---
 import { profile } from "../data/profile";
+
+const spriteUrl = `${import.meta.env.BASE_URL}assets/sprites/player.png`;
 ---
 
 <footer class="site-footer">
-  <p>
+  <p class="site-footer__brand">
+    <span class="footer-sprite" aria-hidden="true"></span>
     <strong>{profile.handle}</strong> on the web.
   </p>
   <p>
     Source: <span>{profile.sourceRepository}</span>
   </p>
 </footer>
+
+<style define:vars={{ spriteUrl: `url(${spriteUrl})` }}>
+  .site-footer__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .footer-sprite {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background-image: var(--spriteUrl);
+    background-repeat: no-repeat;
+    background-size: 128px 128px;
+    background-position: 0 0;
+    image-rendering: pixelated;
+    animation: footer-sprite-walk 0.8s steps(4) infinite;
+  }
+
+  @keyframes footer-sprite-walk {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: -128px 0;
+    }
+  }
+</style>

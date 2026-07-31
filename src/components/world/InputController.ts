@@ -1,13 +1,6 @@
-const MOVEMENT_KEYS = new Set([
-  "w",
-  "a",
-  "s",
-  "d",
-  "arrowup",
-  "arrowleft",
-  "arrowdown",
-  "arrowright",
-]);
+import type { Axes } from "./world-types";
+
+const MOVEMENT_KEYS = new Set(["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"]);
 
 type InputCallbacks = {
   onInteract: () => void;
@@ -20,7 +13,7 @@ function isTypingTarget(target: EventTarget | null) {
     return false;
   }
 
-  if (target.closest("[data-journey-ignore-keys='true']")) {
+  if (target.closest("[data-world-ignore-keys='true']")) {
     return true;
   }
 
@@ -39,8 +32,14 @@ function isTypingTarget(target: EventTarget | null) {
   );
 }
 
+/**
+ * Keyboard input for the world. Never intercepts keys while focus is on a
+ * form control, contenteditable region, or dialog (isPaused covers the
+ * open-dialog case), so normal accessible interaction is unaffected.
+ */
 export class InputController {
   #pressed = new Set<string>();
+  #shiftDown = false;
   #handleKeyDown: (event: KeyboardEvent) => void;
   #handleKeyUp: (event: KeyboardEvent) => void;
   #handleBlur: () => void;
@@ -48,6 +47,10 @@ export class InputController {
   constructor(private callbacks: InputCallbacks) {
     this.#handleKeyDown = (event) => {
       const key = event.key.toLowerCase();
+
+      if (key === "shift") {
+        this.#shiftDown = true;
+      }
 
       if (key === "escape") {
         if (this.callbacks.isPaused()) {
@@ -78,11 +81,16 @@ export class InputController {
     };
 
     this.#handleKeyUp = (event) => {
-      this.#pressed.delete(event.key.toLowerCase());
+      const key = event.key.toLowerCase();
+      if (key === "shift") {
+        this.#shiftDown = false;
+      }
+      this.#pressed.delete(key);
     };
 
     this.#handleBlur = () => {
       this.#pressed.clear();
+      this.#shiftDown = false;
     };
 
     window.addEventListener("keydown", this.#handleKeyDown);
@@ -96,7 +104,7 @@ export class InputController {
     window.removeEventListener("blur", this.#handleBlur);
   }
 
-  getAxes() {
+  getAxes(): Axes {
     const vertical =
       (this.#pressed.has("s") || this.#pressed.has("arrowdown") ? 1 : 0) +
       (this.#pressed.has("w") || this.#pressed.has("arrowup") ? -1 : 0);
@@ -106,8 +114,12 @@ export class InputController {
       (this.#pressed.has("a") || this.#pressed.has("arrowleft") ? -1 : 0);
 
     return {
-      vertical: Math.max(-1, Math.min(1, vertical)),
-      horizontal: Math.max(-1, Math.min(1, horizontal)),
+      vertical: Math.max(-1, Math.min(1, vertical)) as Axes["vertical"],
+      horizontal: Math.max(-1, Math.min(1, horizontal)) as Axes["horizontal"],
     };
+  }
+
+  isRunning() {
+    return this.#shiftDown;
   }
 }

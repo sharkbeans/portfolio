@@ -1,16 +1,17 @@
 ---
 import { getCollection } from "astro:content";
 
-import GameCanvas from "../components/game/GameCanvas.astro";
 import PostList from "../components/PostList.astro";
-import ProjectList from "../components/ProjectList.astro";
 import SocialLinks from "../components/SocialLinks.astro";
+import WorldCanvas from "../components/world/WorldCanvas.astro";
 import { featuredProjects } from "../data/projects";
 import { profile } from "../data/profile";
 import { socials } from "../data/socials";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const base = import.meta.env.BASE_URL;
+const objektTools = featuredProjects.find((project) => project.slug === "objekt-tools");
+const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
 
 const recentPosts = (await getCollection("blog"))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
@@ -26,16 +27,15 @@ const recentPosts = (await getCollection("blog"))
 ---
 
 <BaseLayout title={profile.siteLabel} description={profile.homeBlurb}>
-  <div class="home-shell">
-    <div class="home-shell__map">
-      <GameCanvas />
-    </div>
+  <WorldCanvas />
 
-    <div class="home-shell__content stack" id="journey-content">
-      <section class="home-intro" id="home-intro">
+  <div id="world-content" class="world-stage">
+    <div class="world-flow">
+      <section class="world-block" id="home-intro" data-world-spawn="intro">
         <p class="eyebrow">~</p>
-        <h1>{profile.introHeading}</h1>
-        <p class="lede">{profile.intro}</p>
+        <h1 data-world-solid>{profile.handle.toUpperCase()}</h1>
+        <p class="lede">{profile.introHeading}</p>
+        <p>{profile.intro}</p>
         <p>{profile.homeBlurb}</p>
         <p class="inline-links">
           <a href="#selected-projects">selected projects</a>
@@ -44,23 +44,61 @@ const recentPosts = (await getCollection("blog"))
         </p>
       </section>
 
-      <section id="selected-projects" class="stack">
-        <div>
-          <p class="eyebrow">projects</p>
-          <h2 class="section-title">Things I build</h2>
-        </div>
-        <p>
-          The homepage only shows a short slice. The full archive lives on the{" "}
-          <a href={`${base}projects`}>projects page</a>.
-        </p>
-        <ProjectList projects={featuredProjects} />
+      <hr data-world-solid />
+
+      <section id="selected-projects" class="world-block world-block--right">
+        <article class="world-feature" data-world-solid data-world-interactable="objekt-tools">
+          <p class="eyebrow">project</p>
+          <h2 class="section-title">objekt.my</h2>
+          {objektTools ? (
+            <>
+              <p>{objektTools.description}</p>
+              <p class="meta-line">
+                <span>{objektTools.technologies.join(" / ")}</span>
+              </p>
+              <p class="inline-links">
+                <a href={`${base}projects/objekt-tools`}>case study</a>
+                {objektTools.liveUrl ? (
+                  <a href={objektTools.liveUrl} target="_blank" rel="noreferrer">live</a>
+                ) : null}
+                {objektTools.repositoryUrl ? (
+                  <a href={objektTools.repositoryUrl} target="_blank" rel="noreferrer">source</a>
+                ) : null}
+              </p>
+            </>
+          ) : null}
+        </article>
+        <span data-world-spawn="objekt-tools" aria-hidden="true"></span>
       </section>
 
-      <section id="recent-writing" class="stack">
-        <div>
+      <section class="world-block world-block--left">
+        <article class="world-feature" data-world-solid data-world-interactable="mybeli">
+          <p class="eyebrow">project</p>
+          <h2 class="section-title">MyBeli</h2>
+          {mybeli ? (
+            <>
+              <p>{mybeli.description}</p>
+              <p class="meta-line">
+                <span>{mybeli.technologies.join(" / ")}</span>
+                <span> · source is private</span>
+              </p>
+              <p class="inline-links">
+                <a href={`${base}projects/mybeli`}>case study</a>
+              </p>
+            </>
+          ) : null}
+        </article>
+        <span data-world-spawn="mybeli" aria-hidden="true"></span>
+      </section>
+
+      <hr data-world-solid />
+
+      <section id="recent-writing" class="world-block world-block--right">
+        <div data-world-solid data-world-interactable="writing">
           <p class="eyebrow">blog</p>
           <h2 class="section-title">Recent writing</h2>
         </div>
+        <span data-world-spawn="writing" aria-hidden="true"></span>
         <p>
           The archive is intentionally simple. Right now the posts are visible draft placeholders
           rather than pretending to be finished essays.
@@ -68,16 +106,31 @@ const recentPosts = (await getCollection("blog"))
         <PostList posts={recentPosts} />
       </section>
 
-      <section id="public-links" class="stack">
-        <div>
+      <section id="uses-and-tools" class="world-block world-block--left">
+        <div data-world-solid data-world-interactable="uses">
+          <p class="eyebrow">uses</p>
+          <h2 class="section-title">Tools &amp; setup</h2>
+        </div>
+        <span data-world-spawn="uses" aria-hidden="true"></span>
+        <p>
+          Software, editors, and hardware notes, kept as visible placeholders until every field is
+          filled in. See the <a href={`${base}uses`}>full uses page</a>.
+        </p>
+      </section>
+
+      <hr data-world-solid />
+
+      <section id="public-links" class="world-block world-block--right">
+        <div data-world-solid>
           <p class="eyebrow">links</p>
           <h2 class="section-title">Public profiles</h2>
         </div>
+        <span data-world-spawn="links" aria-hidden="true"></span>
         <SocialLinks links={socials} />
       </section>
 
-      <section id="continue-exploring" class="stack">
-        <div>
+      <section id="continue-exploring" class="world-block world-block--left">
+        <div data-world-solid>
           <p class="eyebrow">continue</p>
           <h2 class="section-title">Elsewhere on the site</h2>
         </div>
@@ -92,7 +145,8 @@ const recentPosts = (await getCollection("blog"))
             <a href={`${base}uses`}>/uses</a> for software and hardware notes.
           </li>
           <li>
-            <a href={`${base}about`}>/about</a> for a short first-name-only introduction.
+            <a href={`${base}about`} data-world-interactable="about">/about</a> for a short
+            first-name-only introduction.
           </li>
           <li>
             <a href={`${base}lab`}>/lab</a> for smaller unfinished experiments.
@@ -104,15 +158,51 @@ const recentPosts = (await getCollection("blog"))
 </BaseLayout>
 
 <style>
-  .home-shell {
-    display: grid;
-    grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
-    gap: 2rem;
-    align-items: start;
+  .world-stage {
+    width: min(78rem, calc(100vw - 2rem));
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
   }
 
-  .home-shell__content {
-    min-width: 0;
+  .world-flow {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 8vw, 6rem);
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .world-flow > hr {
+    width: 100%;
+    max-width: 20rem;
+    margin: 0;
+    border: none;
+    border-top: 1px dashed var(--border);
+  }
+
+  .world-block {
+    position: relative;
+    width: 100%;
+    max-width: 34rem;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .world-block--right {
+    margin-inline-start: auto;
+  }
+
+  .world-block--left {
+    margin-inline-end: auto;
+  }
+
+  .world-feature {
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: var(--space-2);
   }
 
   .route-list {
@@ -121,8 +211,10 @@ const recentPosts = (await getCollection("blog"))
   }
 
   @media (max-width: 64rem) {
-    .home-shell {
-      grid-template-columns: 1fr;
+    .world-block--left,
+    .world-block--right {
+      margin-inline: 0;
+      max-width: 100%;
     }
   }
 </style>

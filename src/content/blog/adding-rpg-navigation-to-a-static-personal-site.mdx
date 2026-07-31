@@ -1,6 +1,6 @@
 ---
 title: Adding RPG navigation to a static personal site
-description: Placeholder draft for notes on syncing scrolling, keyboard input, and a small KAPLAY map.
+description: Placeholder draft for notes on turning the homepage's own DOM into a walkable KAPLAY level.
 pubDate: 2026-07-15
 tags:
   - astro
@@ -14,7 +14,11 @@ This draft exists so the idea has a home before the full article does.
 
 The finished version should document:
 
-- Why the site stays 85% normal website and only lightly game-like.
-- How one progress value stays in sync with scroll, keyboard movement, and object interaction.
-- What had to be done so the site still works well without JavaScript or with reduced motion enabled.
-- Where the RPG layer can grow later without taking over the rest of the website.
+- Why the homepage itself is the level: headings, project blocks, and dividers become collision
+  geometry read straight from `getBoundingClientRect()`, instead of a separate hand-drawn map.
+- How document coordinates keep the player, the camera's edge-follow scrolling, and the cached
+  collision rects aligned without fighting normal wheel and touch scrolling.
+- What had to be done so the site still reads well with JavaScript disabled, with reduced motion
+  enabled, or in the explicit reading-mode toggle.
+- Where the sprite and interaction system can grow later without the game ever gating access to
+  real content.

@@ -1,0 +1,65 @@
+---
+import { worldInteractables } from "../../data/world";
+---
+
+<div data-world-root>
+  <canvas id="world-canvas" class="world-canvas" aria-hidden="true"></canvas>
+
+  <div class="world-controls">
+    <p class="world-controls__hint">
+      <kbd>WASD</kbd> / arrows to move · <kbd>Shift</kbd> to run · <kbd>E</kbd> to interact · scroll still
+      works
+    </p>
+    <button
+      type="button"
+      class="world-toggle"
+      data-world-reading-toggle
+      aria-pressed="false"
+    >
+      Reading mode
+    </button>
+  </div>
+
+  <pre class="world-debug" data-world-debug hidden></pre>
+
+  <dialog id="world-dialog" class="world-dialog" aria-label="World interaction preview" data-world-ignore-keys="true">
+    <div class="world-dialog__chrome">
+      <button type="button" data-world-dialog-close aria-label="Close preview">close</button>
+    </div>
+
+    {
+      worldInteractables.map((target) => (
+        <article data-world-preview={target.id} hidden>
+          <p class="eyebrow">preview</p>
+          <h3>{target.title}</h3>
+          <p>{target.description}</p>
+          <p>
+            <a href={target.href}>{target.ctaLabel}</a>
+          </p>
+        </article>
+      ))
+    }
+  </dialog>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-world-root]");
+
+  if (root) {
+    const boot = () =>
+      import("./world")
+        .then(({ initWorld }) => {
+          initWorld(root);
+          root.dataset.enhanced = "true";
+        })
+        .catch(() => {
+          root.dataset.enhanced = "failed";
+        });
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => boot(), { timeout: 1200 });
+    } else {
+      setTimeout(() => boot(), 250);
+    }
+  }
+</script>
