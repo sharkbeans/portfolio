@@ -1,0 +1,46 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import type { Project } from "../data/projects";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const title = `${project.title} | projects | sharkbeans`;
+---
+
+<BaseLayout title={title} description={project.description}>
+  <article class="prose-shell">
+    <header class="page-header">
+      <p class="eyebrow">projects</p>
+      <h1>{project.title}</h1>
+      <p class="lede">{project.description}</p>
+      <p class="meta-line">
+        {project.status ? <span>{project.status}</span> : null}
+        <span> · </span>
+        <span>{project.technologies.join(" / ")}</span>
+      </p>
+      <p class="inline-links">
+        {project.liveUrl ? (
+          <a href={project.liveUrl} rel="noreferrer" target="_blank">
+            live site
+          </a>
+        ) : (
+          <span>live site: [ADD PUBLIC URL]</span>
+        )}
+        {project.repositoryUrl ? (
+          <a href={project.repositoryUrl} rel="noreferrer" target="_blank">
+            repository
+          </a>
+        ) : (
+          <span>source repository is private</span>
+        )}
+      </p>
+    </header>
+
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

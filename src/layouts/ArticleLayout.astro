@@ -1,0 +1,51 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  draft?: boolean;
+  previousPost?: { title: string; url: string };
+  nextPost?: { title: string; url: string };
+  canonicalUrl?: string;
+}
+
+const { title, description, pubDate, updatedDate, tags = [], draft = false, previousPost, nextPost } =
+  Astro.props;
+
+const fullTitle = `${title} | blog | sharkbeans`;
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+---
+
+<BaseLayout title={fullTitle} description={description} noIndex={draft}>
+  <article class="prose-shell">
+    <header class="page-header">
+      <p class="eyebrow">blog</p>
+      <h1>{title}</h1>
+      <p class="lede">{description}</p>
+      <p class="meta-line">
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        {updatedDate ? <> · updated <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time></> : null}
+        {draft ? <> · draft placeholder</> : null}
+      </p>
+      {tags.length > 0 ? <p class="tag-list">{tags.map((tag) => `#${tag}`).join(" ")}</p> : null}
+    </header>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <nav class="post-nav" aria-label="Post navigation">
+      <div>{previousPost ? <a href={previousPost.url}>Previous: {previousPost.title}</a> : <span />}</div>
+      <div>{nextPost ? <a href={nextPost.url}>Next: {nextPost.title}</a> : <span />}</div>
+    </nav>
+  </article>
+</BaseLayout>

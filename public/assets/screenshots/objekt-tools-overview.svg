@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">objekt.my overview placeholder</title>
+  <desc id="desc">A placeholder diagram for objekt.my tools.</desc>
+  <rect width="960" height="600" fill="#f4efe3" />
+  <rect x="40" y="40" width="880" height="520" rx="16" fill="#fbf8ef" stroke="#b8ab98" stroke-width="4" />
+  <text x="92" y="110" fill="#1f1a14" font-size="38" font-family="IBM Plex Mono, monospace">objekt.my</text>
+  <text x="92" y="150" fill="#6b5f4f" font-size="22" font-family="Iowan Old Style, Georgia, serif">Placeholder overview diagram for the public case study.</text>
+  <g font-family="IBM Plex Mono, monospace" font-size="22">
+    <rect x="92" y="210" width="230" height="90" rx="12" fill="#d8efe8" stroke="#0d675a" />
+    <text x="126" y="262" fill="#0d675a">Trades + Lists</text>
+    <rect x="364" y="210" width="230" height="90" rx="12" fill="#ece4d3" stroke="#6b5f4f" />
+    <text x="384" y="262" fill="#6b5f4f">Collection</text>
+    <rect x="636" y="210" width="230" height="90" rx="12" fill="#ece4d3" stroke="#6b5f4f" />
+    <text x="666" y="262" fill="#6b5f4f">Proofshot</text>
+    <rect x="228" y="360" width="230" height="90" rx="12" fill="#ece4d3" stroke="#6b5f4f" />
+    <text x="240" y="412" fill="#6b5f4f">Objekt Maker</text>
+    <rect x="500" y="360" width="230" height="90" rx="12" fill="#ece4d3" stroke="#6b5f4f" />
+    <text x="572" y="412" fill="#6b5f4f">Spin</text>
+  </g>
+</svg>

@@ -1,0 +1,80 @@
+---
+import { projects } from "../../data/projects";
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+
+const project = projects.find((entry) => entry.slug === "mybeli");
+
+if (!project) {
+  throw new Error("Missing project data for mybeli");
+}
+---
+
+<ProjectLayout project={project}>
+  <p>
+    MyBeli exists to replace a fragile catalog workflow: manually edited PDFs that need to be
+    re-exported and resent every time a product, price, or stock count changes.
+  </p>
+
+  <h2>What it is for</h2>
+  <p>
+    The target users are small shop owners who need a current public catalog and a lightweight
+    management surface behind it. Instead of treating every client as a separate hand-built site,
+    MyBeli is designed as one system serving multiple independent shops.
+  </p>
+
+  <h2>What it does</h2>
+  <ul>
+    <li>Publishes a public web catalog that stays current without resending PDFs.</li>
+    <li>Provides product and inventory management for each shop owner.</li>
+    <li>Supports multiple independent client shops in one platform.</li>
+    <li>Allows branded subdomains such as <code>shopname.mybeli.my</code>.</li>
+  </ul>
+
+  <h2>Multi-tenant shape</h2>
+  <p>
+    The public-safe version of the architecture is straightforward: each shop has its own catalog
+    identity, product set, and management workflow, while the application still behaves like one
+    shared system. That keeps onboarding and maintenance much simpler than running a custom codebase
+    for every client.
+  </p>
+
+  <h2>Technical notes</h2>
+  <p>
+    The only stack detail confirmed here is that the application is built with Elixir. I have
+    deliberately left framework specifics, deployment internals, credentials, and customer data out
+    of this public page.
+  </p>
+
+  <p class="note-box">
+    The source repository is private.
+  </p>
+
+  <figure>
+    <img
+      class="frame-image"
+      src="/assets/screenshots/mybeli-dashboard.svg"
+      alt="Placeholder dashboard panel for MyBeli showing products, stock updates, and catalog publishing."
+    />
+    <figcaption>
+      Placeholder dashboard image. Replace with a redacted real screenshot if a public demo becomes
+      available.
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img
+      class="frame-image"
+      src="/assets/screenshots/mybeli-architecture.svg"
+      alt="Placeholder architecture diagram showing branded shop subdomains pointing into a shared multi-tenant application."
+    />
+    <figcaption>
+      Public-safe architecture sketch for the shared multi-tenant model.
+    </figcaption>
+  </figure>
+
+  <h2>Public links</h2>
+  <ul>
+    <li>Demo: <code>[ADD PUBLIC DEMO URL]</code></li>
+    <li>Screenshot set: <code>[ADD SCREENSHOT OR RECORDING LINK]</code></li>
+  </ul>
+</ProjectLayout>

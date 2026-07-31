@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = (await getCollection("blog"))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .map((entry) => ({
+    url: `/blog/${entry.id}/`,
+    title: entry.data.title,
+    description: entry.data.description,
+    tags: entry.data.tags,
+    draft: entry.data.draft,
+    pubDate: entry.data.pubDate,
+  }));
+---
+
+<BaseLayout title="blog | sharkbeans" description="Project notes, development writing, and placeholder drafts.">
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">blog</p>
+      <h1>Writing archive</h1>
+      <p class="lede">
+        A plain archive grouped by year. Draft placeholders stay visible on purpose so unfinished
+        ideas do not need to pretend they are polished.
+      </p>
+    </header>
+
+    <PostList posts={posts} />
+  </div>
+</BaseLayout>

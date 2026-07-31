@@ -1,0 +1,53 @@
+---
+type PostSummary = {
+  url: string;
+  title: string;
+  description: string;
+  tags: string[];
+  draft: boolean;
+  pubDate: Date;
+};
+
+interface Props {
+  posts: PostSummary[];
+}
+
+const { posts } = Astro.props;
+
+const groupedPosts = Object.entries(
+  posts.reduce<Record<string, PostSummary[]>>((groups, post) => {
+    const year = post.pubDate.getFullYear().toString();
+    groups[year] ??= [];
+    groups[year].push(post);
+    return groups;
+  }, {}),
+).sort(([a], [b]) => Number(b) - Number(a));
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+---
+
+<div class="post-archive">
+  {
+    groupedPosts.map(([year, yearPosts]) => (
+      <section class="post-archive__year">
+        <h2>{year}</h2>
+        <ul class="post-archive__list">
+          {yearPosts.map((post) => (
+            <li>
+              <span class="post-archive__date">{formatDate(post.pubDate)}</span>
+              <a href={post.url}>{post.title}</a>
+              {post.draft ? <span class="meta-chip">draft</span> : null}
+              {post.tags.length > 0 ? (
+                <span class="tag-list">{post.tags.map((tag) => `#${tag}`).join(" ")}</span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>

@@ -1,0 +1,34 @@
+---
+import SocialLinks from "../components/SocialLinks.astro";
+import { profile } from "../data/profile";
+import { socials } from "../data/socials";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="about | sharkbeans" description="A short personal page.">
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">about</p>
+      <h1>Hi, I'm {profile.firstName}.</h1>
+    </header>
+
+    <div class="prose">
+      <p>
+        I build web products, collector tools, and browser interactions that feel a little more
+        tactile than the average page.
+      </p>
+      <p>
+        Most of what I enjoy sits somewhere between straightforward utility and playful interface
+        work: static sites, app-like workflows, small experiments, and systems that stay readable
+        after the first version ships.
+      </p>
+      <p>
+        I also spend a lot of time around Linux, TypeScript, Astro, and the idea that personal
+        websites should feel like calm places to return to instead of compressed profile pages.
+      </p>
+
+      <h2>Links</h2>
+      <SocialLinks links={socials} />
+    </div>
+  </div>
+</BaseLayout>

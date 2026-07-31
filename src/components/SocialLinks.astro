@@ -1,0 +1,27 @@
+---
+import type { SocialLink } from "../data/socials";
+
+interface Props {
+  links: SocialLink[];
+}
+
+const { links } = Astro.props;
+---
+
+<ul class="inline-links">
+  {
+    links.map((link) => (
+      <li>
+        {link.href ? (
+          <a href={link.href} rel="me noreferrer" target="_blank">
+            {link.label}
+          </a>
+        ) : (
+          <span>
+            {link.label}: <code>{link.note}</code>
+          </span>
+        )}
+      </li>
+    ))
+  }
+</ul>

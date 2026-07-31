@@ -1,0 +1,198 @@
+---
+import { journeyInteractables } from "./JourneyMap";
+---
+
+<section class="journey-panel" data-game-root>
+  <div class="journey-panel__intro">
+    <h2>Homepage field guide</h2>
+    <p data-journey-hint>Scroll, use WASD, or press the arrow keys.</p>
+  </div>
+
+  <div class="journey-panel__frame">
+    <canvas
+      id="journey-canvas"
+      width="320"
+      height="520"
+      aria-hidden="true"
+    />
+    <div class="journey-panel__fallback">
+      <p>The small map is decorative. The normal links and page sections work without it.</p>
+    </div>
+  </div>
+
+  <ul class="journey-panel__quick-links plain-list" aria-label="Map destinations">
+    {
+      journeyInteractables.map((target) => (
+        <li>
+          <button type="button" data-open-preview={target.id}>
+            {target.label}
+          </button>
+          <a href={target.href}>{target.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <dialog id="journey-dialog" class="journey-dialog" aria-label="Homepage map preview">
+    <div class="journey-dialog__chrome" data-journey-ignore-keys="true">
+      <button type="button" data-dialog-close aria-label="Close preview">
+        close
+      </button>
+    </div>
+
+    {
+      journeyInteractables.map((target) => (
+        <article data-preview={target.id} hidden>
+          <p class="eyebrow">preview</p>
+          <h3>{target.title}</h3>
+          <p>{target.description}</p>
+          <p>
+            <a href={target.href}>{target.ctaLabel}</a>
+          </p>
+        </article>
+      ))
+    }
+  </dialog>
+</section>
+
+<script>
+  const root = document.querySelector("[data-game-root]");
+
+  if (root instanceof HTMLElement) {
+    const boot = () =>
+      import("./game")
+        .then(({ initHomeJourney }) => {
+          initHomeJourney(root);
+        })
+        .catch(() => {
+          root.dataset.enhanced = "failed";
+        });
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => boot(), { timeout: 1200 });
+    } else {
+      setTimeout(() => boot(), 250);
+    }
+  }
+</script>
+
+<style>
+  .journey-panel {
+    position: sticky;
+    top: 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .journey-panel__intro h2 {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+  }
+
+  .journey-panel__intro p {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+  }
+
+  .journey-panel__frame {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .journey-panel__fallback {
+    position: absolute;
+    inset: auto 0 0;
+    padding: 0.8rem;
+    background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .journey-panel[data-enhanced="true"] .journey-panel__fallback {
+    display: none;
+  }
+
+  .journey-panel__quick-links {
+    display: grid;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+  }
+
+  .journey-panel__quick-links li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .journey-panel__quick-links button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+  }
+
+  .journey-dialog {
+    width: min(32rem, calc(100vw - 2rem));
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    padding: 1.2rem;
+  }
+
+  .journey-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .journey-dialog__chrome {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .journey-dialog__chrome button {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    padding: 0.45rem 0.7rem;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .journey-dialog h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 64rem) {
+    .journey-panel {
+      position: static;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .journey-panel__fallback,
+    .journey-dialog {
+      transition: none;
+    }
+  }
+</style>

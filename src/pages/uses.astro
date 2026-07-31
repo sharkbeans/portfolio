@@ -1,0 +1,38 @@
+---
+import { usesSections } from "../data/uses";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="uses | sharkbeans" description="Software, hardware, and development tools.">
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">uses</p>
+      <h1>Stuff I use</h1>
+      <p class="lede">
+        This page follows the usual <code>/uses</code> spirit: practical notes, small tables, and
+        obvious placeholders where the final details still need to be filled in.
+      </p>
+    </header>
+
+    {
+      usesSections.map((section) => (
+        <section class="stack">
+          <div>
+            <h2>{section.title}</h2>
+            {section.intro ? <p>{section.intro}</p> : null}
+          </div>
+          <table>
+            <tbody>
+              {section.entries.map((entry) => (
+                <tr>
+                  <th>{entry.name}</th>
+                  <td>{entry.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>

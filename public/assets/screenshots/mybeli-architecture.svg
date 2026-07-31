@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">MyBeli architecture placeholder</title>
+  <desc id="desc">A public-safe diagram showing branded subdomains flowing into a shared application.</desc>
+  <rect width="960" height="600" fill="#f4efe3" />
+  <rect x="40" y="40" width="880" height="520" rx="16" fill="#fbf8ef" stroke="#b8ab98" stroke-width="4" />
+  <g font-family="IBM Plex Mono, monospace" font-size="26">
+    <rect x="100" y="130" width="220" height="100" rx="12" fill="#d8efe8" stroke="#0d675a" />
+    <text x="120" y="188" fill="#0d675a">shop-a.mybeli.my</text>
+    <rect x="100" y="260" width="220" height="100" rx="12" fill="#d8efe8" stroke="#0d675a" />
+    <text x="120" y="318" fill="#0d675a">shop-b.mybeli.my</text>
+    <rect x="100" y="390" width="220" height="100" rx="12" fill="#d8efe8" stroke="#0d675a" />
+    <text x="120" y="448" fill="#0d675a">shop-c.mybeli.my</text>
+    <rect x="430" y="240" width="430" height="140" rx="16" fill="#ece4d3" stroke="#6b5f4f" />
+    <text x="486" y="314" fill="#6b5f4f">shared multi-tenant application</text>
+  </g>
+  <g stroke="#6b5f4f" stroke-width="6">
+    <line x1="320" y1="180" x2="430" y2="290" />
+    <line x1="320" y1="310" x2="430" y2="310" />
+    <line x1="320" y1="440" x2="430" y2="330" />
+  </g>
+</svg>

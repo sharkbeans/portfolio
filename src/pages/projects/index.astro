@@ -1,0 +1,20 @@
+---
+import ProjectList from "../../components/ProjectList.astro";
+import { projects } from "../../data/projects";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="projects | sharkbeans" description="A compact archive of projects and experiments.">
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">projects</p>
+      <h1>Project archive</h1>
+      <p class="lede">
+        This is a straightforward list rather than a portfolio pitch deck. Each entry links to a
+        fuller page when there is enough context to be useful.
+      </p>
+    </header>
+
+    <ProjectList projects={projects.filter((project) => project.slug !== "retrocam")} />
+  </div>
+</BaseLayout>
