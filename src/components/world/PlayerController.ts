@@ -1,7 +1,7 @@
 import type { Axes, Direction, PlayerSnapshot, SolidRect, WorldRect } from "./world-types";
 
-const BASE_SPEED = 150; // document px/sec
-const RUN_SPEED = 260;
+const BASE_SPEED = 300; // document px/sec
+const RUN_SPEED = 520;
 const HITBOX_HALF_WIDTH = 10;
 const HITBOX_HEIGHT = 12;
 

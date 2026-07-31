@@ -202,7 +202,9 @@ export function initWorld(root: HTMLElement) {
             collisionSystem.getSolidRects(),
             collisionSystem.getBounds(),
           );
-          camera.tick(dt, player.y);
+          if (player.isMoving) {
+            camera.tick(dt, player.y);
+          }
         }
 
         currentNearest = dialogOpen
