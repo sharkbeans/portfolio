@@ -22,6 +22,21 @@ import { worldInteractables } from "../../data/world";
 
   <pre class="world-debug" data-world-debug hidden></pre>
 
+  {import.meta.env.DEV && (
+    <div class="world-debug-weather" data-world-debug-weather>
+      <p class="world-debug-weather__label">weather (dev only)</p>
+      <div class="world-debug-weather__row" role="group" aria-label="Weather condition override">
+        <button type="button" data-weather-condition="clear">clear</button>
+        <button type="button" data-weather-condition="rain">rain</button>
+      </div>
+      <div class="world-debug-weather__row" role="group" aria-label="Time of day override">
+        <button type="button" data-weather-period="day">day</button>
+        <button type="button" data-weather-period="night">night</button>
+      </div>
+      <button type="button" class="world-debug-weather__reset" data-weather-reset>live</button>
+    </div>
+  )}
+
   <dialog id="world-dialog" class="world-dialog" aria-label="World interaction preview" data-world-ignore-keys="true">
     <div class="world-dialog__chrome">
       <button type="button" data-world-dialog-close aria-label="Close preview">close</button>

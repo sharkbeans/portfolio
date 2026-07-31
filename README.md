@@ -100,7 +100,11 @@ src/
 │   │   ├── InputController.ts      keyboard axes, run, interact, escape
 │   │   ├── CameraController.ts     edge-follow page scrolling
 │   │   ├── InteractionSystem.ts    proximity detection, highlight, preview dialog
-│   │   └── SpawnPointSystem.ts     data-world-spawn -> safe placement
+│   │   ├── SpawnPointSystem.ts     data-world-spawn -> safe placement
+│   │   ├── FootEffectSystem.ts     footfall-cadenced splash marks at the player's feet
+│   │   ├── WeatherState.ts         live Penang weather/time-of-day (Open-Meteo), dev override
+│   │   ├── BulletSystem.ts         ricochet-then-detonate projectile physics
+│   │   └── BlastEffectSystem.ts    one-shot blast mark where a bullet detonates
 │   ├── Footer.astro
 │   ├── Header.astro
 │   ├── PostList.astro
@@ -144,12 +148,19 @@ src/
 scripts/
 └── generate-sprite.mjs             regenerates public/assets/sprites/player.png
 
+assets-src/
+└── vfx/
+    └── ppvfx-general-pack-1/        full third-party VFX pack, not served — see its NOTICE.md
+
 public/
 ├── assets/
 │   ├── screenshots/
-│   └── sprites/
-│       ├── player.png
-│       └── player.json
+│   ├── sprites/
+│   │   ├── player.png
+│   │   └── player.json
+│   └── vfx/
+│       ├── footstep-splash.png     third-party, see Acknowledgements
+│       └── bullet-blast.png        third-party, see Acknowledgements
 ├── favicon.svg
 └── social-card.svg
 ```
@@ -221,7 +232,9 @@ direction — down, left, right, up — 4 walk frames each, frame 0 doubles as i
 It's a hand-rolled RGBA PNG encoder using only `node:zlib` — no image dependency.
 
 **License:** the sprite is original placeholder art generated for this project — public domain /
-CC0, replace freely. No copyrighted or ripped game assets are used anywhere in this project.
+CC0, replace freely. No ripped or unlicensed game assets are used anywhere in this project; the
+only third-party art in the repo is the footstep VFX described in
+[Acknowledgements](#acknowledgements), used under its explicit free license.
 
 To use different art, replace `public/assets/sprites/player.png` (and update the `sliceX`/`sliceY`
 and `anims` in `ANIMS` inside `src/components/world/world.ts` if the frame layout changes).
@@ -248,6 +261,29 @@ Manual movement requires both a wide viewport and a fine pointer:
 
 Manual keyboard movement, DOM collision, and camera follow are all inert in this mode — mobile
 just gets normal scrolling, which is the point.
+
+### Weather-reactive foot effects
+
+`WeatherState.ts` fetches Penang's current precipitation and day/night state from
+[Open-Meteo](https://open-meteo.com/) (no API key required), cached in `sessionStorage` for ~20
+minutes, and falls back silently to a clear/day default if the request fails — this is a decorative
+detail, so an error state would be more distracting than just not showing rain. `FootEffectSystem.ts`
+uses only the `condition` half of that snapshot to spawn a small, short-lived splash mark at the
+player's foot point in step with their stride, only while it's raining in Penang. Nothing spawns
+while idle, crouched, the weather is clear, or with `prefers-reduced-motion: reduce` set. This is
+intentionally scoped to the player's immediate footprint rather than an ambient page-wide overlay —
+see the sprite asset in [Acknowledgements](#acknowledgements).
+
+The `period` (day/night) value is tracked but not yet wired to any visual — it exists so a future
+lighting tweak doesn't need a new fetch, and so the dev debug panel below has something concrete to
+toggle.
+
+**Dev-only debug panel:** in `astro dev` (never in a production build — gated on
+`import.meta.env.DEV`, statically stripped from the build output), a small panel in the
+bottom-right lets you force `condition` (clear/rain) and `period` (day/night) instead of waiting on
+real Penang weather, plus a "live" button to clear the override. The `?debugWorld=1` collision
+overlay's on-screen readout also prints the current weather snapshot so you can confirm an override
+took effect even before period drives any visual.
 
 ### Collision debug mode
 
@@ -399,8 +435,22 @@ Possible later expansions:
 - no full legal name is displayed
 - no resume or CV page exists
 - no employment timeline exists
-- no copyrighted or ripped game assets are used anywhere
+- no ripped or unlicensed game assets are used anywhere — the one exception is properly licensed
+  and credited in [Acknowledgements](#acknowledgements)
 - all current data is local and static
+
+## Acknowledgements
+
+- Footstep splash VFX (`public/assets/vfx/footstep-splash.png`) and the bullet detonation VFX
+  (`public/assets/vfx/bullet-blast.png`) are cropped from DryRain's
+  [Pixel Platformer VFX General Pack 1](https://dryrainent.itch.io/ppvfx-general-1), used under its
+  free-for-personal-and-commercial-projects license (modification allowed, reselling the pack
+  itself is not; attribution isn't required by the license but is given here anyway). The full pack
+  (dust, sparks, smoke, pulses, beams, debris, and more) is kept in
+  `assets-src/vfx/ppvfx-general-pack-1/` — not served by the site, just checked in so future effects
+  don't require re-downloading. See that folder's `NOTICE.md` for details.
+- Penang weather/day-night data comes from [Open-Meteo](https://open-meteo.com/), a free,
+  keyless weather API — see [Weather-reactive foot effects](#weather-reactive-foot-effects).
 
 ## Known limitations
 

@@ -1,12 +1,15 @@
 import kaplay from "kaplay";
 
+import { BlastEffectSystem } from "./BlastEffectSystem";
 import { BulletSystem } from "./BulletSystem";
 import { CameraController } from "./CameraController";
 import { DomCollisionSystem } from "./DomCollisionSystem";
+import { FootEffectSystem } from "./FootEffectSystem";
 import { InputController } from "./InputController";
 import { InteractionSystem } from "./InteractionSystem";
 import { PlayerController } from "./PlayerController";
 import { SpawnPointSystem } from "./SpawnPointSystem";
+import { WeatherState, type TimePeriod, type WeatherCondition } from "./WeatherState";
 import { findWorldInteractable } from "../../data/world";
 import type { Axes, InteractableRect } from "./world-types";
 
@@ -14,6 +17,13 @@ const SPRITE_SCALE = 0.77;
 const READING_MODE_KEY = "world:reading-mode";
 const MOBILE_GUTTER = 28;
 const MOBILE_MIN_WIDTH = 420;
+
+// 32x32-per-frame horizontal sheets from DryRain's Pixel Platformer VFX
+// General Pack 1 (see README Acknowledgements).
+const SPLASH_FRAME_COUNT = 5;
+const FOOT_EFFECT_SCALE = 1.1;
+const BLAST_FRAME_COUNT = 7;
+const BLAST_SCALE = 1.2;
 
 // Anims are keyed by facing *side* ("r"/"l") rather than by direction: the
 // source sheet only has left/right profile art, so down/up alias whichever
@@ -105,6 +115,53 @@ export function initWorld(root: HTMLElement) {
       dialogOpen = open;
     },
   });
+
+  const weatherState = new WeatherState();
+  void weatherState.load();
+  const footEffects = new FootEffectSystem();
+
+  if (import.meta.env.DEV) {
+    const conditionButtons = root.querySelectorAll<HTMLButtonElement>("[data-weather-condition]");
+    const periodButtons = root.querySelectorAll<HTMLButtonElement>("[data-weather-period]");
+    const resetButton = root.querySelector<HTMLButtonElement>("[data-weather-reset]");
+
+    const syncWeatherButtons = () => {
+      const override = weatherState.getDebugOverride();
+      conditionButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.weatherCondition === override?.condition));
+      });
+      periodButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.weatherPeriod === override?.period));
+      });
+      resetButton?.setAttribute("aria-pressed", String(!override));
+    };
+
+    // InputController ignores WASD while focus sits on any <button> (so real
+    // page buttons/links don't hijack movement) — these are dev-only debug
+    // controls, so blur immediately after each click rather than making
+    // testers click elsewhere on the page before movement works again.
+    conditionButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        weatherState.setDebugOverride({ condition: button.dataset.weatherCondition as WeatherCondition });
+        syncWeatherButtons();
+        button.blur();
+      });
+    });
+    periodButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        weatherState.setDebugOverride({ period: button.dataset.weatherPeriod as TimePeriod });
+        syncWeatherButtons();
+        button.blur();
+      });
+    });
+    resetButton?.addEventListener("click", () => {
+      weatherState.setDebugOverride(null);
+      syncWeatherButtons();
+      resetButton.blur();
+    });
+
+    syncWeatherButtons();
+  }
 
   const inputController = new InputController({
     isPaused: () => dialogOpen || readingMode || !manualMode,
@@ -202,6 +259,14 @@ export function initWorld(root: HTMLElement) {
       sliceY: 8,
       anims: ANIMS,
     });
+    k.loadSprite("foot-splash", `${import.meta.env.BASE_URL}assets/vfx/footstep-splash.png`, {
+      sliceX: SPLASH_FRAME_COUNT,
+      sliceY: 1,
+    });
+    k.loadSprite("bullet-blast", `${import.meta.env.BASE_URL}assets/vfx/bullet-blast.png`, {
+      sliceX: BLAST_FRAME_COUNT,
+      sliceY: 1,
+    });
 
     const sprite = k.add([
       k.sprite("player", { anim: "idle-r" }),
@@ -234,6 +299,7 @@ export function initWorld(root: HTMLElement) {
     const PING_DURATION = 0.35;
 
     const bulletSystem = new BulletSystem();
+    const blastEffects = new BlastEffectSystem();
 
     k.onUpdate(() => {
       const dt = k.dt();
@@ -250,7 +316,10 @@ export function initWorld(root: HTMLElement) {
           if (pingMarker.age >= PING_DURATION) pingMarker = null;
         }
 
-        bulletSystem.tick(dt, collisionSystem.getSolidRects(), collisionSystem.getBounds());
+        bulletSystem.tick(dt, collisionSystem.getSolidRects(), collisionSystem.getBounds(), (x, y) =>
+          blastEffects.spawn(x, y),
+        );
+        blastEffects.tick(dt);
 
         if (!dialogOpen) {
           const keyboardAxes = inputController.getAxes();
@@ -282,7 +351,19 @@ export function initWorld(root: HTMLElement) {
           if (player.isMoving) {
             camera.tick(dt, player.y);
           }
+
+          if (!reducedMotionQuery.matches) {
+            footEffects.spawnIfDue(
+              dt,
+              player.x,
+              player.y,
+              player.isMoving,
+              player.isRunning,
+              weatherState.get().condition,
+            );
+          }
         }
+        footEffects.tick(dt);
 
         currentNearest = dialogOpen
           ? undefined
@@ -309,7 +390,7 @@ export function initWorld(root: HTMLElement) {
 
           if (fireTarget) {
             const muzzleX = player.x + (side === "l" ? -9 : 9);
-            const muzzleY = player.y - 9;
+            const muzzleY = player.y - (sprite.height * SPRITE_SCALE) / 2;
             bulletSystem.spawn(muzzleX, muzzleY, fireTarget.x, fireTarget.y);
           }
         } else if (firing) {
@@ -338,7 +419,7 @@ export function initWorld(root: HTMLElement) {
       }
     });
 
-    k.onDraw(() => {
+    const drawWorld = () => {
       if (readingMode || sprite.hidden) return;
 
       if (manualMode && pingMarker) {
@@ -366,6 +447,34 @@ export function initWorld(root: HTMLElement) {
             width: 2,
             color: k.rgb(255, 226, 140),
             opacity: 0.9,
+          });
+        }
+
+        for (const blast of blastEffects.all) {
+          const t = blastEffects.progress(blast);
+          const frame = Math.min(BLAST_FRAME_COUNT - 1, Math.floor(t * BLAST_FRAME_COUNT));
+
+          k.drawSprite({
+            sprite: "bullet-blast",
+            frame,
+            pos: k.vec2(blast.x - window.scrollX, blast.y - window.scrollY),
+            anchor: "center",
+            scale: BLAST_SCALE,
+          });
+        }
+      }
+
+      if (manualMode) {
+        for (const effect of footEffects.all) {
+          const t = footEffects.progress(effect);
+          const frame = Math.min(SPLASH_FRAME_COUNT - 1, Math.floor(t * SPLASH_FRAME_COUNT));
+
+          k.drawSprite({
+            sprite: "foot-splash",
+            frame,
+            pos: k.vec2(effect.x - window.scrollX, effect.y - window.scrollY),
+            anchor: "bot",
+            scale: FOOT_EFFECT_SCALE,
           });
         }
       }
@@ -410,7 +519,15 @@ export function initWorld(root: HTMLElement) {
       if (debugEnabled) {
         drawDebugOverlay();
       }
-    });
+    };
+
+    // k.onDraw() would register `drawWorld` as a plain z-less object, and
+    // KAPLAY's child sort (`.z ?? 0`) draws that *before* — i.e. behind —
+    // the z(10) player sprite. Everything drawn here (foot effects, shadow,
+    // ping/bullets, dialogue bubble, debug overlay) needs to sit in front of
+    // the sprite instead, so it's registered directly via `add` with an
+    // explicit z above the sprite's.
+    k.add([k.z(11), { draw: drawWorld }]);
 
     function drawDebugOverlay() {
       for (const rect of collisionSystem.getSolidRects()) {
@@ -457,12 +574,14 @@ export function initWorld(root: HTMLElement) {
       }
 
       if (debugEl) {
+        const weather = weatherState.get();
         debugEl.hidden = false;
         debugEl.textContent = [
           `world  x:${player.x.toFixed(0)} y:${player.y.toFixed(0)}`,
           `scroll x:${window.scrollX.toFixed(0)} y:${window.scrollY.toFixed(0)}`,
           `solids:${collisionSystem.getSolidRects().length} interactables:${collisionSystem.getInteractableRects().length}`,
           `mode:${manualMode ? "manual" : "decorative"} reading:${readingMode}`,
+          `weather:${weather.condition}/${weather.period}${weatherState.getDebugOverride() ? " (debug)" : ""}`,
         ].join("\n");
       }
     }

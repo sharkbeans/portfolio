@@ -2,7 +2,7 @@ import type { SolidRect, WorldRect } from "./world-types";
 
 const BULLET_SPEED = 1400; // world px/sec
 const BULLET_MAX_DISTANCE = 960; // world px travelled before despawn
-const BULLET_MAX_BOUNCES = 2;
+const BULLET_MAX_BOUNCES = 1; // one ricochet, then the next wall hit detonates instead of bouncing again
 const SURFACE_NUDGE = 0.5; // pushes the bullet clear of a wall after a bounce so it can't re-hit the same face next step
 const MAX_STEPS_PER_FRAME = 6; // safety cap on bounces resolved within a single frame
 
@@ -72,7 +72,9 @@ function nearestSolidHit(ox: number, oy: number, dx: number, dy: number, solids:
  * Fired bullets travel in a straight line and ricochet off solid DOM rects
  * (the same geometry PlayerController collides with) using reflection
  * across the impact surface normal, up to a limited number of bounces and
- * total travel distance before despawning.
+ * total travel distance before despawning. The wall hit that exhausts the
+ * bounce budget detonates instead of ricocheting again — `onImpact` is
+ * called at that point so the caller can spawn a blast effect there.
  */
 export class BulletSystem {
   #bullets: Bullet[] = [];
@@ -95,11 +97,17 @@ export class BulletSystem {
     return this.#bullets;
   }
 
-  tick(dt: number, solids: readonly SolidRect[], bounds: WorldRect) {
-    this.#bullets = this.#bullets.filter((bullet) => this.#step(bullet, dt, solids, bounds));
+  tick(dt: number, solids: readonly SolidRect[], bounds: WorldRect, onImpact?: (x: number, y: number) => void) {
+    this.#bullets = this.#bullets.filter((bullet) => this.#step(bullet, dt, solids, bounds, onImpact));
   }
 
-  #step(bullet: Bullet, dt: number, solids: readonly SolidRect[], bounds: WorldRect): boolean {
+  #step(
+    bullet: Bullet,
+    dt: number,
+    solids: readonly SolidRect[],
+    bounds: WorldRect,
+    onImpact?: (x: number, y: number) => void,
+  ): boolean {
     let remaining = BULLET_SPEED * dt;
     let steps = 0;
 
@@ -126,7 +134,11 @@ export class BulletSystem {
       bullet.distanceLeft -= consumed;
       remaining -= consumed;
 
-      if (bullet.distanceLeft <= 0 || bullet.bouncesLeft <= 0) {
+      if (bullet.distanceLeft <= 0) {
+        return false;
+      }
+      if (bullet.bouncesLeft <= 0) {
+        onImpact?.(bullet.x, bullet.y);
         return false;
       }
       bullet.bouncesLeft--;
