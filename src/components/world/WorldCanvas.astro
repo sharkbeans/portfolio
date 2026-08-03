@@ -58,23 +58,54 @@ import { worldInteractables } from "../../data/world";
 </div>
 
 <script>
-  const root = document.querySelector<HTMLElement>("[data-world-root]");
+  let teardown: (() => void) | null = null;
+  let booting = false;
 
-  if (root) {
-    const boot = () =>
-      import("./world")
-        .then(({ initWorld }) => {
-          initWorld(root);
-          root.dataset.enhanced = "true";
-        })
-        .catch(() => {
-          root.dataset.enhanced = "failed";
-        });
+  function boot() {
+    const root = document.querySelector<HTMLElement>("[data-world-root]");
+    if (!root || booting || teardown) return;
+    booting = true;
 
+    import("./world")
+      .then(({ initWorld }) => {
+        // The page can be navigated away from while the chunk is still
+        // loading, leaving this root detached — mounting into it would spin up
+        // a world with nothing to draw on and no way to reach its teardown.
+        if (!root.isConnected) {
+          booting = false;
+          return;
+        }
+        teardown = initWorld(root);
+        root.dataset.enhanced = "true";
+      })
+      .catch(() => {
+        booting = false;
+        root.dataset.enhanced = "failed";
+      });
+  }
+
+  function schedule() {
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(() => boot(), { timeout: 1200 });
     } else {
       setTimeout(() => boot(), 250);
     }
   }
+
+  function dispose() {
+    teardown?.();
+    teardown = null;
+    booting = false;
+  }
+
+  // The world lives on one page, but nothing about it is scoped to that page:
+  // its update loop, its window-level input listeners and its scroll-following
+  // camera all survive a client-side navigation. Left running, the camera keeps
+  // scrolling whatever page came next back toward a player that is no longer on
+  // screen. So it is torn down before every swap and re-mounted by the page
+  // load that follows, if the new page has a world root at all.
+  document.addEventListener("astro:before-swap", dispose);
+  document.addEventListener("astro:page-load", schedule);
+
+  schedule();
 </script>

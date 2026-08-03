@@ -10,13 +10,14 @@ interface Props {
 }
 
 const base = import.meta.env.BASE_URL;
+const archiveHref = `${base}projects`;
 
 const { project } = Astro.props;
 const title = `${project.title} | projects | sharkbeans`;
 ---
 
 <BaseLayout title={title} description={project.description}>
-  <article class="prose-shell prose-shell--project" data-project-slug={project.slug}>
+  <article class="prose-shell prose-shell--door">
     <header class="page-header">
       <p class="eyebrow">projects</p>
       <h1>{project.title}</h1>
@@ -57,7 +58,7 @@ const title = `${project.title} | projects | sharkbeans`;
     {/* The archive, pinned to the viewport behind the page. Inert: it is a
         preview of where you are heading, not something to interact with. */}
     <div class="door-underlay" aria-hidden="true" inert>
-      <Header pathname={`${base}projects`} />
+      <Header pathname={archiveHref} />
       <div class="site-main">
         <ProjectArchive />
       </div>
@@ -66,56 +67,12 @@ const title = `${project.title} | projects | sharkbeans`;
 
     {/* The door itself: an opaque sheet covering every part of the document
         except the runway, so the underlay only shows once it has scrolled by. */}
-    <div class="door-panel"></div>
+    <div class="door-panel" data-door-archive={archiveHref}></div>
   </Fragment>
 </BaseLayout>
 
 <script>
-  import { doorClosedScrollY, garageNavigate } from "../scripts/pageTransition";
+  import { wireDoors } from "../scripts/pageTransition";
 
-  let cleanup: (() => void) | null = null;
-
-  function initDoor() {
-    cleanup?.();
-    cleanup = null;
-
-    const base = import.meta.env.BASE_URL;
-    const path = window.location.pathname;
-    const isProjectDetail = path.startsWith(`${base}projects/`) && path !== `${base}projects/`;
-    if (!isProjectDetail) return;
-
-    const panel = document.querySelector<HTMLElement>(".door-panel");
-    if (!panel) return;
-
-    const slug =
-      document.querySelector<HTMLElement>("article.prose-shell")?.dataset.projectSlug ?? "";
-
-    // Arriving back from the archive: land exactly where the door is shut, so
-    // the next downward scroll starts opening it from zero.
-    if (sessionStorage.getItem("scrollBackEntry") === "bottom") {
-      sessionStorage.removeItem("scrollBackEntry");
-      requestAnimationFrame(() => window.scrollTo(0, doorClosedScrollY()));
-    }
-
-    let committed = false;
-
-    function onScroll() {
-      // Nothing here drives the door — it is an ordinary element scrolling with
-      // the page, so its bottom edge already is the door's position. All this
-      // watches for is the edge clearing the top of the viewport, at which
-      // point the archive is the only thing on screen and the real navigation
-      // can be swapped in underneath without anything visibly changing.
-      if (committed || panel!.getBoundingClientRect().bottom > 0) return;
-      committed = true;
-      window.removeEventListener("scroll", onScroll);
-      if (slug) sessionStorage.setItem("lastProjectSlug", slug);
-      garageNavigate(`${base}projects`, "cut");
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    cleanup = () => window.removeEventListener("scroll", onScroll);
-  }
-
-  document.addEventListener("astro:page-load", initDoor);
+  wireDoors();
 </script>

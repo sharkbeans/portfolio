@@ -1,5 +1,8 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import BlogArchive from "../components/BlogArchive.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
 
 interface Props {
   title: string;
@@ -16,6 +19,8 @@ interface Props {
 const { title, description, pubDate, updatedDate, tags = [], draft = false, previousPost, nextPost } =
   Astro.props;
 
+const base = import.meta.env.BASE_URL;
+const archiveHref = `${base}blog`;
 const fullTitle = `${title} | blog | sharkbeans`;
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat("en", {
@@ -26,7 +31,7 @@ const formatDate = (date: Date) =>
 ---
 
 <BaseLayout title={fullTitle} description={description} noIndex={draft}>
-  <article class="prose-shell">
+  <article class="prose-shell prose-shell--door">
     <header class="page-header">
       <p class="eyebrow">blog</p>
       <h1>{title}</h1>
@@ -48,4 +53,24 @@ const formatDate = (date: Date) =>
       <div>{nextPost ? <a href={nextPost.url}>Next: {nextPost.title}</a> : <span />}</div>
     </nav>
   </article>
+
+  <Fragment slot="door-layers">
+    <div class="door-runway"></div>
+
+    <div class="door-underlay" aria-hidden="true" inert>
+      <Header pathname={archiveHref} />
+      <div class="site-main">
+        <BlogArchive />
+      </div>
+      <Footer />
+    </div>
+
+    <div class="door-panel" data-door-archive={archiveHref}></div>
+  </Fragment>
 </BaseLayout>
+
+<script>
+  import { wireDoors } from "../scripts/pageTransition";
+
+  wireDoors();
+</script>

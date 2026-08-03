@@ -299,7 +299,7 @@ kbd {
 
 /* A beat of empty page after the article before the garage door starts to
    lift. The scroll length the door itself needs comes from .door-runway. */
-.prose-shell--project {
+.prose-shell--door {
   padding-bottom: var(--space-6);
 }
 
@@ -329,8 +329,8 @@ kbd {
 }
 
 /* ── Garage door ───────────────────────────────────────────────────────────
-   Leaving a project page raises a door to uncover the archive underneath. The
-   door is not animated: it is an opaque panel scrolling with the page, over an
+   Leaving a detail page (a project, a blog post) raises a door to uncover its
+   archive underneath. The door is not animated: it is an opaque panel over an
    archive pinned to the viewport, followed by a viewport-tall runway of extra
    scroll. So the door's position is the scroll position — it tracks the wheel
    exactly, reverses, and carries momentum, because it *is* scrolling. Once the
