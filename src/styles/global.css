@@ -3,8 +3,19 @@
 @import "./world.css";
 
 html {
+  --scanlines: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+
   scroll-behavior: auto;
   background: var(--bg);
+  /* keep boundary wheel/touch input fully available to scroll-nav listeners
+     instead of it being partly consumed by native rubber-banding */
+  overscroll-behavior: none;
 }
 
 body {
@@ -22,15 +33,11 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Above the garage-door layers (0) but below the page chrome (2), so the
+     texture still reads over a raised door. */
+  z-index: 1;
   pointer-events: none;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.025) 0,
-    rgba(255, 255, 255, 0.025) 1px,
-    transparent 1px,
-    transparent 3px
-  );
+  background-image: var(--scanlines);
 }
 
 *,
@@ -98,7 +105,8 @@ kbd {
 .site-footer,
 .site-main {
   position: relative;
-  z-index: 1;
+  /* Above both the scanlines (1) and the garage-door layers (0). */
+  z-index: 2;
   width: min(72rem, calc(100vw - 2rem));
   margin: 0 auto;
 }
@@ -188,10 +196,10 @@ kbd {
 .home-intro h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 900;
-  letter-spacing: -0.01em;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-size: clamp(1.9rem, 3.6vw, 2.75rem);
+  line-height: 1.15;
 }
 
 .eyebrow {
@@ -289,6 +297,12 @@ kbd {
   padding-bottom: var(--space-5);
 }
 
+/* A beat of empty page after the article before the garage door starts to
+   lift. The scroll length the door itself needs comes from .door-runway. */
+.prose-shell--project {
+  padding-bottom: var(--space-6);
+}
+
 .note-box,
 .placeholder-box {
   padding: var(--space-3);
@@ -312,6 +326,91 @@ kbd {
   .post-nav {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Garage door ───────────────────────────────────────────────────────────
+   Leaving a project page raises a door to uncover the archive underneath. The
+   door is not animated: it is an opaque panel scrolling with the page, over an
+   archive pinned to the viewport, followed by a viewport-tall runway of extra
+   scroll. So the door's position is the scroll position — it tracks the wheel
+   exactly, reverses, and carries momentum, because it *is* scrolling. Once the
+   panel clears the top of the viewport the archive is all that is left on
+   screen, and the real navigation is swapped in behind it. */
+
+html {
+  /* A little past one viewport, so the door is reliably clear of the top
+     before the scroll runs out. */
+  --door-runway: calc(100vh + 4rem);
+}
+
+.door-runway {
+  height: var(--door-runway);
+}
+
+.door-underlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.door-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: var(--door-runway);
+  z-index: 0;
+  background: var(--bg);
+}
+
+/* ── Page transitions ──────────────────────────────────────────────────────
+   `data-garage` is set on <html> by garageNavigate(); navigations that don't
+   set it keep the browser's default cross-fade. Reduced motion is already
+   covered by the ClientRouter's own `animation: none !important` rule for
+   view-transition pseudo-elements. */
+
+html[data-garage] {
+  --garage-duration: 720ms;
+  --garage-ease: cubic-bezier(0.72, 0, 0.16, 1);
+}
+
+@keyframes garage-lower {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* The default cross-fade blends both snapshots with plus-lighter, which would
+   wash the overlap out to white while the door is halfway down. */
+html[data-garage]::view-transition-old(root),
+html[data-garage]::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+/* Pulling back into a project: the door comes down over the archive. There is
+   no scroll runway above the top of a page to scrub against, so this direction
+   is a timed animation rather than a scroll-driven one. */
+html[data-garage="down"]::view-transition-new(root) {
+  z-index: 2;
+  animation: garage-lower var(--garage-duration) var(--garage-ease) both;
+}
+
+html[data-garage="down"]::view-transition-old(root) {
+  z-index: 1;
+  animation: none;
+}
+
+/* Committing the raised door: the archive is already on screen as the underlay,
+   so the swap to the real page must not animate at all. */
+html[data-garage="cut"]::view-transition-old(root),
+html[data-garage="cut"]::view-transition-new(root) {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

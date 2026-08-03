@@ -1,0 +1,17 @@
+---
+import ProjectList from "./ProjectList.astro";
+import { visibleProjects } from "../data/projects";
+---
+
+<div class="stack">
+  <header class="page-header">
+    <p class="eyebrow">projects</p>
+    <h1>Project archive</h1>
+    <p class="lede">
+      This is a straightforward list rather than a portfolio pitch deck. Each entry links to a fuller
+      page when there is enough context to be useful.
+    </p>
+  </header>
+
+  <ProjectList projects={visibleProjects} />
+</div>

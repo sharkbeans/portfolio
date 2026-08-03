@@ -1,20 +1,99 @@
 ---
-import ProjectList from "../../components/ProjectList.astro";
-import { projects } from "../../data/projects";
+import ProjectArchive from "../../components/ProjectArchive.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="projects | sharkbeans" description="A compact archive of projects and experiments.">
-  <div class="stack">
-    <header class="page-header">
-      <p class="eyebrow">projects</p>
-      <h1>Project archive</h1>
-      <p class="lede">
-        This is a straightforward list rather than a portfolio pitch deck. Each entry links to a
-        fuller page when there is enough context to be useful.
-      </p>
-    </header>
-
-    <ProjectList projects={projects.filter((project) => project.slug !== "retrocam")} />
-  </div>
+  <ProjectArchive />
 </BaseLayout>
+
+<script>
+  import { doorClosedScrollY, garageNavigate } from "../../scripts/pageTransition";
+
+  let cleanup: (() => void) | null = null;
+
+  function initScrollBack() {
+    cleanup?.();
+    cleanup = null;
+
+    const base = import.meta.env.BASE_URL;
+    const slug = sessionStorage.getItem("lastProjectSlug");
+    if (!slug) return;
+
+    let triggered = false;
+    let pull = 0;
+
+    function go() {
+      if (triggered) return;
+      triggered = true;
+      sessionStorage.removeItem("lastProjectSlug");
+      sessionStorage.setItem("scrollBackEntry", "bottom");
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      // The project page is the door coming back down over this one. Put it at
+      // its door-shut scroll position before the first animated frame so the
+      // page-load correction there has nothing left to move.
+      garageNavigate(`${base}projects/${slug}`, "down", () => {
+        window.scrollTo(0, doorClosedScrollY());
+      });
+    }
+
+    function onWheel(e: WheelEvent) {
+      if (triggered) return;
+      if (window.scrollY > 0) {
+        pull = 0;
+        return;
+      }
+      if (e.deltaY < 0) {
+        pull += -e.deltaY;
+        if (pull > 60) go();
+      } else {
+        pull = 0;
+      }
+    }
+
+    let touchStartY: number | null = null;
+
+    function onTouchStart(e: TouchEvent) {
+      touchStartY = e.touches[0]?.clientY ?? null;
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (triggered || touchStartY === null) return;
+      if (window.scrollY > 0) {
+        pull = 0;
+        return;
+      }
+      const currentY = e.touches[0]?.clientY ?? touchStartY;
+      const delta = currentY - touchStartY;
+      if (delta > 60) {
+        go();
+      } else if (delta <= 0) {
+        pull = 0;
+      }
+    }
+
+    // Leaving /projects any way other than the reverse-scroll gesture (e.g.
+    // clicking a nav link to /blog) breaks the objekt-tools <-> projects
+    // cycle, so forget the pending back-nav instead of leaving it armed for
+    // some unrelated later visit to this page.
+    function onBeforePreparation() {
+      if (!triggered) sessionStorage.removeItem("lastProjectSlug");
+    }
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.addEventListener("astro:before-preparation", onBeforePreparation, { once: true });
+
+    cleanup = () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("astro:before-preparation", onBeforePreparation);
+    };
+  }
+
+  document.addEventListener("astro:page-load", initScrollBack);
+</script>

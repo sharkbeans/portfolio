@@ -58,3 +58,4 @@ export const projects: Project[] = [
 ];
 
 export const featuredProjects = projects.filter((project) => project.featured);
+export const visibleProjects = projects.filter((project) => project.slug !== "retrocam");

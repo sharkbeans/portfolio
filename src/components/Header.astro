@@ -1,8 +1,14 @@
 ---
 import { profile } from "../data/profile";
 
+interface Props {
+  /** Route to render the header as. Overridable so the door underlay can show
+      the archive's header while it is still sitting on a project page. */
+  pathname?: string;
+}
+
 const base = import.meta.env.BASE_URL;
-const pathname = Astro.url.pathname;
+const { pathname = Astro.url.pathname } = Astro.props;
 const pageLabel = pathname === base ? "home" : pathname.slice(base.length).replace(/\/$/, "");
 
 const navItems = [

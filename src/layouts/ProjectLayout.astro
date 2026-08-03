@@ -1,17 +1,22 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import ProjectArchive from "../components/ProjectArchive.astro";
 import type { Project } from "../data/projects";
 
 interface Props {
   project: Project;
 }
 
+const base = import.meta.env.BASE_URL;
+
 const { project } = Astro.props;
 const title = `${project.title} | projects | sharkbeans`;
 ---
 
 <BaseLayout title={title} description={project.description}>
-  <article class="prose-shell">
+  <article class="prose-shell prose-shell--project" data-project-slug={project.slug}>
     <header class="page-header">
       <p class="eyebrow">projects</p>
       <h1>{project.title}</h1>
@@ -43,4 +48,74 @@ const title = `${project.title} | projects | sharkbeans`;
       <slot />
     </div>
   </article>
+
+  <Fragment slot="door-layers">
+    {/* Extra scroll length past the end of the page. Scrolling through it is
+        what raises the door — there is no timed animation involved. */}
+    <div class="door-runway"></div>
+
+    {/* The archive, pinned to the viewport behind the page. Inert: it is a
+        preview of where you are heading, not something to interact with. */}
+    <div class="door-underlay" aria-hidden="true" inert>
+      <Header pathname={`${base}projects`} />
+      <div class="site-main">
+        <ProjectArchive />
+      </div>
+      <Footer />
+    </div>
+
+    {/* The door itself: an opaque sheet covering every part of the document
+        except the runway, so the underlay only shows once it has scrolled by. */}
+    <div class="door-panel"></div>
+  </Fragment>
 </BaseLayout>
+
+<script>
+  import { doorClosedScrollY, garageNavigate } from "../scripts/pageTransition";
+
+  let cleanup: (() => void) | null = null;
+
+  function initDoor() {
+    cleanup?.();
+    cleanup = null;
+
+    const base = import.meta.env.BASE_URL;
+    const path = window.location.pathname;
+    const isProjectDetail = path.startsWith(`${base}projects/`) && path !== `${base}projects/`;
+    if (!isProjectDetail) return;
+
+    const panel = document.querySelector<HTMLElement>(".door-panel");
+    if (!panel) return;
+
+    const slug =
+      document.querySelector<HTMLElement>("article.prose-shell")?.dataset.projectSlug ?? "";
+
+    // Arriving back from the archive: land exactly where the door is shut, so
+    // the next downward scroll starts opening it from zero.
+    if (sessionStorage.getItem("scrollBackEntry") === "bottom") {
+      sessionStorage.removeItem("scrollBackEntry");
+      requestAnimationFrame(() => window.scrollTo(0, doorClosedScrollY()));
+    }
+
+    let committed = false;
+
+    function onScroll() {
+      // Nothing here drives the door — it is an ordinary element scrolling with
+      // the page, so its bottom edge already is the door's position. All this
+      // watches for is the edge clearing the top of the viewport, at which
+      // point the archive is the only thing on screen and the real navigation
+      // can be swapped in underneath without anything visibly changing.
+      if (committed || panel!.getBoundingClientRect().bottom > 0) return;
+      committed = true;
+      window.removeEventListener("scroll", onScroll);
+      if (slug) sessionStorage.setItem("lastProjectSlug", slug);
+      garageNavigate(`${base}projects`, "cut");
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    cleanup = () => window.removeEventListener("scroll", onScroll);
+  }
+
+  document.addEventListener("astro:page-load", initDoor);
+</script>
