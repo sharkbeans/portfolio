@@ -5,6 +5,10 @@ on:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    # Keeps the contribution calendar and language stats on stats.astro fresh
+    # even on days with no commit to this repo. Times are UTC.
+    - cron: "17 3 * * *"
 
 permissions:
   contents: read
@@ -34,6 +38,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Fetch GitHub stats
+        env:
+          GH_STATS_TOKEN: ${{ secrets.GH_STATS_TOKEN }}
+          GH_STATS_PRIVATE_TOKEN: ${{ secrets.GH_STATS_PRIVATE_TOKEN }}
+          GH_STATS_SHOWCASE_REPOS: ${{ vars.GH_STATS_SHOWCASE_REPOS }}
+        run: node scripts/fetch-github-stats.mjs
 
       - name: Build Astro site
         run: npm run build

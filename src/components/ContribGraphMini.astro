@@ -1,0 +1,104 @@
+---
+import {
+  computeStreaks,
+  flattenDays,
+  githubStats,
+  levelFor,
+} from "../data/github";
+
+const WEEKS_SHOWN = 16;
+
+const allDays = flattenDays(githubStats.contributions.weeks);
+const max = Math.max(0, ...allDays.map((day) => day.count));
+const { current, longest } = computeStreaks(allDays);
+
+const recentWeeks = githubStats.contributions.weeks.slice(-WEEKS_SHOWN);
+
+const CELL = 10;
+const GAP = 2;
+const STEP = CELL + GAP;
+const width = recentWeeks.length * STEP - GAP;
+const height = 7 * STEP - GAP;
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+function tooltip(count: number, iso: string): string {
+  const label = count === 1 ? "1 contribution" : `${count} contributions`;
+  return `${label} on ${dateFormatter.format(new Date(`${iso}T00:00:00Z`))}`;
+}
+---
+
+<div class="contrib-mini">
+  <svg
+    class="contrib-mini__svg"
+    viewBox={`0 0 ${width} ${height}`}
+    role="img"
+    aria-label={`Last ${WEEKS_SHOWN} weeks of GitHub contributions`}
+  >
+    {recentWeeks.map((week, col) =>
+      week.days.map((day, row) => (
+        <rect
+          x={col * STEP}
+          y={row * STEP}
+          width={CELL}
+          height={CELL}
+          rx={2}
+          ry={2}
+          class={`contrib-mini__cell contrib-mini__cell--${levelFor(day.count, max)}`}
+        >
+          <title>{tooltip(day.count, day.date)}</title>
+        </rect>
+      )),
+    )}
+  </svg>
+
+  <p class="contrib-mini__stats">
+    <span><strong>{githubStats.contributions.total}</strong> past year</span>
+    <span><strong>{current}</strong> day streak</span>
+    <span><strong>{longest}</strong> day best</span>
+  </p>
+</div>
+
+<style>
+  .contrib-mini {
+    --heat-0: #161b22;
+    --heat-1: #0e4429;
+    --heat-2: #006d32;
+    --heat-3: #26a641;
+    --heat-4: #39d353;
+
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .contrib-mini__svg {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    height: auto;
+  }
+
+  .contrib-mini__cell--0 { fill: var(--heat-0); }
+  .contrib-mini__cell--1 { fill: var(--heat-1); }
+  .contrib-mini__cell--2 { fill: var(--heat-2); }
+  .contrib-mini__cell--3 { fill: var(--heat-3); }
+  .contrib-mini__cell--4 { fill: var(--heat-4); }
+
+  .contrib-mini__stats {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .contrib-mini__stats strong {
+    color: var(--text);
+  }
+</style>

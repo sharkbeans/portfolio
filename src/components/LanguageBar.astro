@@ -1,0 +1,179 @@
+---
+import { githubStats } from "../data/github";
+
+const MAX_SLOTS = 7;
+
+// Fixed categorical order, adjacent-pair CVD-validated against this site's
+// dark surface (see dataviz skill) — never reassigned by rank at render time.
+const PALETTE = [
+  "#3987e5", // blue
+  "#d95926", // orange
+  "#199e70", // aqua
+  "#c98500", // yellow
+  "#d55181", // magenta
+  "#008300", // green
+  "#9085e9", // violet
+];
+const OTHER_COLOR = "#5a6270";
+
+const total = githubStats.languages.reduce((sum, lang) => sum + lang.size, 0);
+const top = githubStats.languages.slice(0, MAX_SLOTS);
+const rest = githubStats.languages.slice(MAX_SLOTS);
+const otherSize = rest.reduce((sum, lang) => sum + lang.size, 0);
+
+const segments = [
+  ...top.map((lang, i) => ({ name: lang.name, size: lang.size, color: PALETTE[i] })),
+  ...(otherSize > 0 ? [{ name: "Other", size: otherSize, color: OTHER_COLOR }] : []),
+].filter((segment) => segment.size > 0);
+
+function pct(size: number): number {
+  return total > 0 ? (size / total) * 100 : 0;
+}
+
+function formatPct(size: number): string {
+  const value = pct(size);
+  return value >= 10 ? `${value.toFixed(0)}%` : `${value.toFixed(1)}%`;
+}
+
+const chartData = { segments, total };
+---
+
+<div class="language-bar">
+  {segments.length > 0 ? (
+    <>
+      <div class="language-bar__chart-wrap">
+        <canvas
+          id="language-bar-chart"
+          role="img"
+          aria-label="Language breakdown across public, non-fork repositories"
+        ></canvas>
+      </div>
+      <script is:inline type="application/json" id="language-bar-data" set:html={JSON.stringify(chartData)} />
+
+      <ul class="language-bar__legend">
+        {segments.map((segment) => (
+          <li>
+            <span class="language-bar__swatch" style={`background: ${segment.color};`} />
+            <span class="language-bar__name">{segment.name}</span>
+            <span class="language-bar__pct">{formatPct(segment.size)}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  ) : (
+    <p class="language-bar__empty">No public repository language data yet.</p>
+  )}
+</div>
+
+<style>
+  .language-bar {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .language-bar__chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 22px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .language-bar__legend {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .language-bar__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .language-bar__swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  .language-bar__name {
+    color: var(--text);
+  }
+
+  .language-bar__pct {
+    color: var(--muted);
+  }
+
+  .language-bar__empty {
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  import {
+    BarController,
+    BarElement,
+    CategoryScale,
+    Chart,
+    LinearScale,
+    Tooltip,
+  } from "chart.js";
+
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+
+  type Segment = { name: string; size: number; color: string };
+  type ChartPayload = { segments: Segment[]; total: number };
+
+  const dataEl = document.getElementById("language-bar-data");
+  const canvas = document.getElementById("language-bar-chart");
+
+  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+    const { segments, total }: ChartPayload = JSON.parse(dataEl.textContent);
+
+    function formatPct(size: number): string {
+      const value = total > 0 ? (size / total) * 100 : 0;
+      return value >= 10 ? `${value.toFixed(0)}%` : `${value.toFixed(1)}%`;
+    }
+
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: [""],
+        datasets: segments.map((segment) => ({
+          label: segment.name,
+          data: [segment.size],
+          backgroundColor: segment.color,
+          borderColor: "#101720",
+          borderWidth: 1,
+          categoryPercentage: 1,
+          barPercentage: 1,
+        })),
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, display: false, grid: { display: false } },
+          y: { stacked: true, display: false, grid: { display: false } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: () => "",
+              label: (item) => `${item.dataset.label} — ${formatPct(item.parsed.x ?? 0)}`,
+            },
+          },
+        },
+      },
+    });
+  }
+</script>

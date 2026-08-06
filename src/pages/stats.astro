@@ -1,0 +1,102 @@
+---
+import CommitClock from "../components/CommitClock.astro";
+import ContribGraph from "../components/ContribGraph.astro";
+import LanguageBar from "../components/LanguageBar.astro";
+import { githubStats, isLiveGithubData } from "../data/github";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+/** Fixed lead-in order; every other repo follows, sorted by stars then recency. */
+const PINNED_REPOS = ["objekt-tools", "catalog-template"];
+
+const activeRepos = githubStats.repos.filter((repo) => !repo.isArchived);
+const pinned = PINNED_REPOS.map((name) => activeRepos.find((repo) => repo.name === name)).filter(
+  (repo) => repo !== undefined,
+);
+const pinnedNames = new Set(pinned.map((repo) => repo.name));
+const rest = activeRepos
+  .filter((repo) => !pinnedNames.has(repo.name))
+  .sort((a, b) => b.stars - a.stars || +new Date(b.pushedAt) - +new Date(a.pushedAt));
+
+const topRepos = [...pinned, ...rest].slice(0, 6);
+
+const showcasedPrivateCount = githubStats.repos.filter((repo) => repo.isPrivate).length;
+const anonymousPrivateCount = githubStats.profile.privateRepoCount - showcasedPrivateCount;
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+---
+
+<BaseLayout
+  title="stats | sharkbeans"
+  description="GitHub activity, language mix, and commit habits, refreshed from the GitHub API at build time."
+>
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">stats</p>
+      <h1>Git activity</h1>
+      <p class="lede">
+        Pulled from the GitHub API by a CI step and rendered at build time — no client-side
+        requests, no exposed tokens.
+        {
+          isLiveGithubData ? (
+            <> Last refreshed {dateFormatter.format(new Date(githubStats.generatedAt!))}.</>
+          ) : null
+        }
+      </p>
+    </header>
+
+    <section class="stack" aria-labelledby="contributions-heading">
+      <h2 id="contributions-heading" class="section-title">Contribution</h2>
+      <ContribGraph />
+    </section>
+
+    <section class="stack" aria-labelledby="languages-heading">
+      <h2 id="languages-heading" class="section-title">Languages</h2>
+      <p>
+        Bytes of code across {githubStats.profile.publicRepos} public, non-fork repositories
+        {
+          anonymousPrivateCount > 0 ? (
+            <>
+              , plus {anonymousPrivateCount} private ones folded in by byte count only — nothing
+              about them is named or linked here.
+            </>
+          ) : (
+            "."
+          )
+        }
+      </p>
+      <LanguageBar />
+    </section>
+
+    <section class="stack" aria-labelledby="clock-heading">
+      <h2 id="clock-heading" class="section-title">Commits</h2>
+      <p>When commits actually land, by hour of day (GMT+8).</p>
+      <CommitClock />
+    </section>
+
+    <section class="stack" aria-labelledby="repos-heading">
+      <h2 id="repos-heading" class="section-title">Repositories</h2>
+      <ul class="project-list">
+        {
+          topRepos.map((repo) => (
+            <li class="project-list__item">
+              <div class="project-list__heading">
+                <a href={repo.url} target="_blank" rel="noreferrer">{repo.name}</a>
+                {repo.isPrivate ? <span class="meta-chip">private</span> : null}
+                {repo.language ? <span class="meta-chip">{repo.language}</span> : null}
+                {repo.stars > 0 ? <span class="meta-chip">★ {repo.stars}</span> : null}
+              </div>
+              {repo.description ? <p>{repo.description}</p> : null}
+              <p class="meta-line">
+                <span>pushed {dateFormatter.format(new Date(repo.pushedAt))}</span>
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

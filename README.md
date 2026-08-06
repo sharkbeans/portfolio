@@ -324,7 +324,7 @@ collision-body counts, current mode). It never renders unless explicitly request
 
 ## Other routes
 
-`/projects`, `/blog`, `/uses`, `/about`, `/lab`, and individual project/post pages carry the same
+`/projects`, `/blog`, `/stats`, `/uses`, `/about`, `/lab`, and individual project/post pages carry the same
 dark theme but do not mount the world system — they're plain, fast, readable pages. `Footer.astro`
 has a tiny purely-decorative CSS `steps()` sprite animation (same sheet, no KAPLAY) as the only
 world-adjacent touch outside the homepage.
@@ -421,14 +421,81 @@ Important constraints:
 - Secret-backed requests must not be embedded in client code.
 - Secret-backed or rate-limited integrations need an external API, Worker, or build-time automation.
 
+`/stats` (see below) is the first integration built on this pattern: build-time fetch + committed
+fallback, no browser-side requests.
+
 Possible later expansions:
 
-- recent GitHub activity
 - live project status
 - a guestbook
 - a contact endpoint backed by another service
 - hidden homepage achievements
 - a small terminal experiment
+
+## GitHub stats page
+
+`/stats` renders a GitHub contribution calendar, language mix, a commit-time-of-day histogram, and
+a top-repos list. All of it is fetched at build time by
+[scripts/fetch-github-stats.mjs](/home/jytan/Documents/Git/portfolio/scripts/fetch-github-stats.mjs:1)
+and written to `src/data/generated/github.json`, which
+[src/data/github.ts](/home/jytan/Documents/Git/portfolio/src/data/github.ts:1) types and re-exports
+for the page and its components
+([ContribGraph](/home/jytan/Documents/Git/portfolio/src/components/ContribGraph.astro:1),
+[LanguageBar](/home/jytan/Documents/Git/portfolio/src/components/LanguageBar.astro:1),
+[CommitClock](/home/jytan/Documents/Git/portfolio/src/components/CommitClock.astro:1)). Nothing on
+this page makes a request from the visitor's browser.
+
+The contribution calendar and commit-time histogram are only available through GitHub's GraphQL
+API, which always requires auth — there's no public, unauthenticated equivalent. The repo/language
+data doesn't need a token, so `github.json` ships with that part live and the calendar/clock as a
+zero-filled placeholder, matching the "visible placeholder" convention used on the Uses page.
+
+To make the calendar and commit clock live:
+
+1. Create a **classic personal access token** with only the `read:user` scope checked (nothing
+   else). Fine-grained tokens don't reliably expose the `contributionsCollection` GraphQL field
+   this needs, so classic is the one that actually works here.
+2. Add it as a repository secret named `GH_STATS_TOKEN` (Settings → Secrets and variables →
+   Actions).
+3. The deploy workflow already runs `node scripts/fetch-github-stats.mjs` before `astro build`,
+   on every push to `main` and on a daily schedule (`.github/workflows/deploy.yml`), so the page
+   stays fresh even on days with no commits here.
+
+Without the secret, the workflow step logs a warning and the build proceeds with whatever is
+currently committed in `github.json` — a missing token never breaks the deploy.
+
+To refresh the fallback locally: `GH_STATS_TOKEN=<token> node scripts/fetch-github-stats.mjs`.
+
+### Folding in private repos (language mix + commit clock only)
+
+`GH_STATS_TOKEN` (`read:user`) can't see repo contents at all, so private repos are invisible to
+the language mix and commit clock by default — only public repos are scanned. To auto-discover
+every private repo on the account and fold its language bytes and commit timestamps into those two
+aggregates, without ever exposing the repo itself (name, description, URL, and star count are
+never fetched beyond what identifies it for the query, let alone written to `github.json`):
+
+1. Create a **fine-grained PAT** scoped to **"All repositories"** (not hand-picked ones, so newly
+   created private repos are picked up automatically) with repository permission
+   **Contents: Read-only** and nothing else. This is intentionally a separate token from
+   `GH_STATS_TOKEN` — it stays read-only and content-scoped, so a leak of either token exposes as
+   little as possible.
+2. Add it as a repository secret named `GH_STATS_PRIVATE_TOKEN`.
+
+It's optional and independent of `GH_STATS_TOKEN` — omit it and private-repo folding is silently
+skipped, same graceful-degradation behavior as the main token.
+
+### Naming a private repo in Top Repositories
+
+By default every private repo folded in above stays anonymous — its name is read (to run the
+query) but never written to `github.json`. Printing a repo's name on a public page makes it
+search-indexable even though the link itself 404s for non-collaborators, so naming one is an
+explicit, per-repo opt-in, not automatic:
+
+Add a repository **variable** (Settings → Secrets and variables → Actions → Variables tab, not
+Secrets — it's just repo names, not sensitive) named `GH_STATS_SHOWCASE_REPOS` with a
+comma-separated `owner/name` list, e.g. `sharkbeans/my-private-elixir-app`. Only repos listed there
+get their name, description, URL, and star count written out and shown (with a "private" badge) in
+Top Repositories; every other private repo stays folded in anonymously as before.
 
 ## Content rules already followed
 

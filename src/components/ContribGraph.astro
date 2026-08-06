@@ -1,0 +1,292 @@
+---
+import {
+  computeStreaks,
+  flattenDays,
+  githubStats,
+  isLiveGithubData,
+} from "../data/github";
+
+const days = flattenDays(githubStats.contributions.weeks);
+const max = Math.max(0, ...days.map((day) => day.count));
+const { current, longest } = computeStreaks(days);
+
+const weeks = githubStats.contributions.weeks;
+
+const points = weeks.flatMap((week, weekIndex) =>
+  week.days.map((day, dayIndex) => ({
+    x: weekIndex,
+    y: dayIndex,
+    d: day.date,
+    v: day.count,
+  })),
+);
+
+const monthNames = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+const monthTicks = weeks.reduce<{ weekIndex: number; label: string }[]>((acc, week, weekIndex) => {
+  const month = new Date(`${week.days[0].date}T00:00:00Z`).getUTCMonth();
+  const label = monthNames[month];
+  const prev = acc[acc.length - 1];
+  if (!prev || prev.label !== label) acc.push({ weekIndex, label });
+  return acc;
+}, []);
+
+const chartData = { points, monthTicks, weekCount: weeks.length, max };
+---
+
+<div class="contrib-graph">
+  <div class="contrib-graph__stats">
+    <div class="contrib-graph__stat">
+      <span class="contrib-graph__stat-value">{githubStats.contributions.total}</span>
+      <span class="contrib-graph__stat-label">contributions, past year</span>
+    </div>
+    <div class="contrib-graph__stat">
+      <span class="contrib-graph__stat-value">{current}</span>
+      <span class="contrib-graph__stat-label">day current streak</span>
+    </div>
+    <div class="contrib-graph__stat">
+      <span class="contrib-graph__stat-value">{longest}</span>
+      <span class="contrib-graph__stat-label">day longest streak</span>
+    </div>
+  </div>
+
+  <div class="contrib-graph__chart-wrap">
+    <canvas
+      id="contrib-chart"
+      role="img"
+      aria-label={`GitHub contribution calendar, ${githubStats.contributions.total} contributions in the past year`}
+    ></canvas>
+  </div>
+
+  <script is:inline type="application/json" id="contrib-chart-data" set:html={JSON.stringify(chartData)} />
+
+  <div class="contrib-graph__legend">
+    {!isLiveGithubData ? (
+      <span class="contrib-graph__note">
+        Placeholder grid — populates once the CI workflow runs with a token. See{" "}
+        <a href="https://github.com/sharkbeans/portfolio/blob/main/scripts/fetch-github-stats.mjs" target="_blank" rel="noreferrer">
+          fetch-github-stats.mjs
+        </a>.
+      </span>
+    ) : (
+      <span />
+    )}
+    <span class="contrib-graph__scale">
+      <span>Less</span>
+      <span class="contrib-graph__swatch contrib-graph__swatch--0" />
+      <span class="contrib-graph__swatch contrib-graph__swatch--1" />
+      <span class="contrib-graph__swatch contrib-graph__swatch--2" />
+      <span class="contrib-graph__swatch contrib-graph__swatch--3" />
+      <span class="contrib-graph__swatch contrib-graph__swatch--4" />
+      <span>More</span>
+    </span>
+  </div>
+</div>
+
+<style>
+  .contrib-graph {
+    --heat-0: #161b22;
+    --heat-1: #0e4429;
+    --heat-2: #006d32;
+    --heat-3: #26a641;
+    --heat-4: #39d353;
+
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .contrib-graph__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .contrib-graph__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .contrib-graph__stat-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .contrib-graph__stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .contrib-graph__chart-wrap {
+    position: relative;
+    width: 100%;
+    height: clamp(140px, 18vw, 180px);
+  }
+
+  .contrib-graph__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .contrib-graph__note a {
+    color: var(--muted);
+    text-decoration-color: var(--border);
+  }
+
+  .contrib-graph__scale {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: auto;
+  }
+
+  .contrib-graph__swatch {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+  }
+
+  .contrib-graph__swatch--0 { background: var(--heat-0); }
+  .contrib-graph__swatch--1 { background: var(--heat-1); }
+  .contrib-graph__swatch--2 { background: var(--heat-2); }
+  .contrib-graph__swatch--3 { background: var(--heat-3); }
+  .contrib-graph__swatch--4 { background: var(--heat-4); }
+</style>
+
+<script>
+  import { Chart, registerables, type ScriptableContext } from "chart.js";
+  import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
+
+  Chart.register(...registerables, MatrixController, MatrixElement);
+
+  type ChartPoint = { x: number; y: number; d: string; v: number };
+  type ChartPayload = {
+    points: ChartPoint[];
+    monthTicks: { weekIndex: number; label: string }[];
+    weekCount: number;
+    max: number;
+  };
+
+  const HEAT = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"];
+
+  function levelFor(count: number, max: number): number {
+    if (count <= 0 || max <= 0) return 0;
+    const ratio = count / max;
+    if (ratio > 0.75) return 4;
+    if (ratio > 0.5) return 3;
+    if (ratio > 0.25) return 2;
+    return 1;
+  }
+
+  const dataEl = document.getElementById("contrib-chart-data");
+  const canvas = document.getElementById("contrib-chart");
+
+  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+    const { points, monthTicks, weekCount, max }: ChartPayload = JSON.parse(dataEl.textContent);
+
+    const dateFormatter = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+
+    const monthLabelPlugin = {
+      id: "monthLabels",
+      afterDraw(chart: Chart) {
+        const { ctx, chartArea } = chart;
+        const x = chart.scales.x;
+        if (!chartArea) return;
+        ctx.save();
+        ctx.font = "9px 'IBM Plex Mono', monospace";
+        ctx.fillStyle = "#8b96a3";
+        ctx.textBaseline = "bottom";
+        for (const tick of monthTicks) {
+          ctx.fillText(tick.label, x.getPixelForValue(tick.weekIndex), chartArea.top - 4);
+        }
+        ctx.restore();
+      },
+    };
+
+    new Chart(canvas, {
+      type: "matrix",
+      data: {
+        datasets: [
+          {
+            label: "Contributions",
+            data: points,
+            backgroundColor: (ctx: ScriptableContext<"matrix">) =>
+              HEAT[levelFor((ctx.raw as ChartPoint)?.v ?? 0, max)],
+            borderWidth: 0,
+            borderRadius: 2,
+            width: (ctx: ScriptableContext<"matrix">) => (ctx.chart.chartArea?.width ?? 0) / weekCount - 3,
+            height: (ctx: ScriptableContext<"matrix">) => (ctx.chart.chartArea?.height ?? 0) / 7 - 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 14 } },
+        animation: false,
+        scales: {
+          x: {
+            type: "linear",
+            min: -0.5,
+            max: weekCount - 0.5,
+            display: false,
+            grid: { display: false },
+          },
+          y: {
+            type: "linear",
+            min: -0.5,
+            max: 6.5,
+            reverse: true,
+            grid: { display: false },
+            afterBuildTicks: (axis) => {
+              axis.ticks = [0, 1, 2, 3, 4, 5, 6].map((value) => ({ value }));
+            },
+            ticks: {
+              color: "#8b96a3",
+              font: { family: "'IBM Plex Mono', monospace", size: 9 },
+              callback: (value) => {
+                const labels: Record<number, string> = { 1: "Mon", 3: "Wed", 5: "Fri" };
+                return labels[value as number] ?? "";
+              },
+            },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              title: () => "",
+              label: (item) => {
+                const raw = item.raw as ChartPoint;
+                const label = raw.v === 1 ? "1 contribution" : `${raw.v} contributions`;
+                return `${label} on ${dateFormatter.format(new Date(`${raw.d}T00:00:00Z`))}`;
+              },
+            },
+          },
+        },
+      },
+      plugins: [monthLabelPlugin],
+    });
+  }
+</script>

@@ -1,0 +1,127 @@
+---
+import { githubStats } from "../data/github";
+
+const clock = githubStats.commitClock;
+
+function hourLabel(hour: number): string {
+  if (hour === 0) return "12a";
+  if (hour === 12) return "12p";
+  return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
+}
+
+const labels = clock ? clock.hours.map((_, hour) => hourLabel(hour)) : [];
+const chartData = clock ? { labels, hours: clock.hours } : null;
+---
+
+<div class="commit-clock">
+  {clock ? (
+    <>
+      <div class="commit-clock__chart-wrap">
+        <canvas
+          id="commit-clock-chart"
+          role="img"
+          aria-label="Commits by hour of day, Kuala Lumpur time"
+        ></canvas>
+      </div>
+      <script is:inline type="application/json" id="commit-clock-data" set:html={JSON.stringify(chartData)} />
+      <p class="commit-clock__caption">
+        {clock.sampled} commits sampled across {clock.reposScanned} repos, past year, Kuala Lumpur
+        time (GMT+8).
+      </p>
+    </>
+  ) : (
+    <p class="commit-clock__empty">
+      No commit-time sample yet — this chart populates once the CI workflow runs with a token.
+    </p>
+  )}
+</div>
+
+<style>
+  .commit-clock {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .commit-clock__chart-wrap {
+    position: relative;
+    width: 100%;
+    height: clamp(140px, 16vw, 180px);
+  }
+
+  .commit-clock__caption,
+  .commit-clock__empty {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
+
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+
+  type ChartPayload = { labels: string[]; hours: number[] };
+
+  const dataEl = document.getElementById("commit-clock-data");
+  const canvas = document.getElementById("commit-clock-chart");
+
+  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+    const { labels, hours }: ChartPayload = JSON.parse(dataEl.textContent);
+
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Commits",
+            data: hours,
+            backgroundColor: "#f2b84b",
+            borderRadius: 3,
+            maxBarThickness: 20,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: "#8b96a3",
+              font: { family: "'IBM Plex Mono', monospace", size: 9 },
+              callback(_value, index) {
+                return index % 3 === 0 ? labels[index] : "";
+              },
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "#33383a" },
+            ticks: {
+              color: "#8b96a3",
+              font: { family: "'IBM Plex Mono', monospace", size: 9 },
+              precision: 0,
+            },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              title: (items) => labels[items[0].dataIndex],
+              label: (item) => {
+                const count = item.parsed.y;
+                return `${count} commit${count === 1 ? "" : "s"}`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+</script>

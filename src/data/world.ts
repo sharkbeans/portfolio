@@ -44,6 +44,15 @@ export const worldInteractables: WorldInteractable[] = [
     promptLabel: "read latest posts",
   },
   {
+    id: "github-stats",
+    title: "Git activity",
+    description:
+      "Contribution calendar, language mix, and commit timing, fetched at build time from the GitHub API.",
+    href: `${base}stats`,
+    ctaLabel: "Open stats page",
+    promptLabel: "view Git activity",
+  },
+  {
     id: "uses",
     title: "Uses",
     description: "An editable list of software, development tools, desktop setup, and hardware notes.",
