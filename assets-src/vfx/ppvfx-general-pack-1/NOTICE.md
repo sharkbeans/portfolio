@@ -3,7 +3,7 @@ https://dryrainent.itch.io/ppvfx-general-1
 
 License: free for personal and commercial use, modification allowed. Reselling
 the pack itself is not permitted. Attribution is not required by the license
-but is given anyway — see the root [README.md](/home/jytan/Documents/Git/portfolio/README.md:1) Acknowledgements section.
+but is given anyway — see the root [README.md](../../../README.md) Acknowledgements section.
 
 This is the full pack as downloaded, kept here so other effects (dust,
 sparks, smoke, pulses, beams, debris) are available without re-downloading

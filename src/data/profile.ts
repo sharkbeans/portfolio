@@ -1,6 +1,6 @@
 export const profile = {
   handle: "sharkbeans",
-  siteLabel: "sharkbeans.dev",
+  siteLabel: "sharkbeans",
   site: "https://sharkbeans.github.io",
   firstName: "Juny",
   introHeading: "Hi, I'm Juny.",
@@ -10,7 +10,6 @@ export const profile = {
     "Project notes, work in progress, my dev setup, and a few smaller experiments.",
   aboutIntro:
     "I like building small web systems that stay understandable, useful, and a little bit playful.",
-  emailLabel: "junyitan2003@gmail.com",
   github: "https://github.com/sharkbeans",
   sourceRepository: "https://github.com/sharkbeans/portfolio",
 } as const;

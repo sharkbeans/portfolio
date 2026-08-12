@@ -46,7 +46,10 @@ const base = import.meta.env.BASE_URL;
   <p>
     The repository README is intentionally concise, so I only used confirmed public details here.
     The repo itself currently exposes a TypeScript codebase with Next.js, Drizzle, PostgreSQL,
-    Playwright, and Vitest visible in the checked-in configuration.
+    Playwright, and Vitest visible in the checked-in configuration, plus Redis for caching and
+    Better Auth for sign-in, using Discord's device authorization flow in place of an earlier
+    custom login-code system. CI runs the automated test suite alongside Trivy vulnerability
+    scanning before anything ships.
   </p>
 
   <p>
@@ -69,12 +72,11 @@ const base = import.meta.env.BASE_URL;
   <figure>
     <img
       class="frame-image"
-      src={`${base}assets/screenshots/objekt-tools-overview.svg`}
-      alt="Placeholder overview diagram for objekt.my showing the trades, collection, proofshot, and custom card tools."
+      src={`${base}assets/screenshots/objekt-tools-overview.png`}
+      alt="Screenshot of the objekt.my homepage showing the Trades, Lists, Collection, Objektify, Proofshot, and Spin tool cards."
     />
     <figcaption>
-      Placeholder diagram. Replace with real screenshots if you want the case study to show the live
-      interface directly.
+      The objekt.my homepage, live as of this writing.
     </figcaption>
   </figure>
 </ProjectLayout>

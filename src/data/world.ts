@@ -35,15 +35,6 @@ export const worldInteractables: WorldInteractable[] = [
     promptLabel: "inspect MyBeli",
   },
   {
-    id: "writing",
-    title: "Blog archive",
-    description:
-      "Development notes, project write-ups, and placeholder drafts for posts that still need to be written.",
-    href: `${base}blog`,
-    ctaLabel: "Open blog",
-    promptLabel: "read latest posts",
-  },
-  {
     id: "github-stats",
     title: "Git activity",
     description:

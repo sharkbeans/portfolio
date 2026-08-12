@@ -1,0 +1,61 @@
+---
+import { projects } from "../../data/projects";
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+
+const project = projects.find((entry) => entry.slug === "objekt-tcg");
+
+if (!project) {
+  throw new Error("Missing project data for objekt-tcg");
+}
+
+const base = import.meta.env.BASE_URL;
+---
+
+<ProjectLayout project={project}>
+  <p>
+    objekt-tcg is a sibling project to <a href="https://objekt.my" target="_blank" rel="noreferrer">objekt.my</a>,
+    cloned from its foundation and then pushed in a different direction: instead of trades and
+    lists, it's a TCG-style pack opening game for Cosmo objekt collectors. It's abandoned now, but
+    it was never really meant to ship — it was an excuse to spend time with real-time 3D rendering
+    in the browser.
+  </p>
+
+  <h2>The idea</h2>
+  <p>
+    Where objekt.my derives ownership live from a blockchain indexer, this app owned ownership
+    itself: users could open a free pack once an hour, the server rolled the cards, and the result
+    was persisted to its own database. The indexer was only ever read as a catalog for card
+    images and metadata, borrowing the same Next.js, Drizzle/PostgreSQL, Better Auth, and Redis
+    foundation as objekt.my, but with its own database and its own Discord OAuth app.
+  </p>
+
+  <h2>What actually got built</h2>
+  <p>
+    Most of the work went into the pack itself: a scrubbable pack-opening animation built with
+    React Three Fiber and Three.js, rendering real <code>.glb</code> models with customizable
+    packs and stickers rather than a flat 2D reveal. That 3D layer is the part that ended up being
+    the actual point of the project.
+  </p>
+
+  <h2>Why it stopped</h2>
+  <p>
+    It stayed a solo experiment rather than a real spinoff — worth keeping around as a record of
+    playing with a rendering stack outside the usual web app work, not as a live product.
+  </p>
+
+  <p class="note-box">
+    The source repository is private, and there's no live deployment.
+  </p>
+
+  <figure>
+    <img
+      class="frame-image"
+      src={`${base}assets/screenshots/objekt-tcg-pack.png`}
+      alt="Screenshot of the objekt-tcg pack-opening scene: a rendered TRIPLES pack from the Atom02 Premier set, ready to be torn open."
+    />
+    <figcaption>
+      The pack-opening scene, from a local dev run — this is a still frame of what's normally a
+      scrubbable 3D animation.
+    </figcaption>
+  </figure>
+</ProjectLayout>

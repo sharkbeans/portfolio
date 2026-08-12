@@ -30,21 +30,38 @@ const base = import.meta.env.BASE_URL;
     <li>Provides product and inventory management for each shop owner.</li>
     <li>Supports multiple independent client shops in one platform.</li>
     <li>Allows branded subdomains such as <code>shopname.mybeli.my</code>.</li>
+    <li>
+      Imports and versions product catalogs from Excel workbooks, with strict validation and a
+      confirm-before-apply diff so a shop owner can see exactly what a spreadsheet upload will
+      change before it goes live.
+    </li>
   </ul>
 
   <h2>Multi-tenant shape</h2>
   <p>
     The public-safe version of the architecture is straightforward: each shop has its own catalog
     identity, product set, and management workflow, while the application still behaves like one
-    shared system. That keeps onboarding and maintenance much simpler than running a custom codebase
-    for every client.
+    shared system. Every client runs from the same codebase and image, deployed separately with
+    Docker Compose behind nginx, each with its own PostgreSQL database — there is no shared
+    row-level multi-tenancy, which keeps one client's data fully isolated from another's. That
+    keeps onboarding and maintenance much simpler than running a custom codebase for every client.
+  </p>
+
+  <h2>The platform site</h2>
+  <p>
+    The apex domain, <code>mybeli.my</code>, is a special case of the same client model: it runs
+    the public landing page instead of redirecting straight into a catalog. Scrolling the landing
+    page previews the live demo catalog with a "garage door" transition — the same lift/lower page
+    transition this portfolio site uses for its own project pages, borrowed over because it turned
+    out to be a good fit for revealing a catalog underneath a landing page too.
   </p>
 
   <h2>Technical notes</h2>
   <p>
-    The only stack detail confirmed here is that the application is built with Elixir. I have
-    deliberately left framework specifics, deployment internals, credentials, and customer data out
-    of this public page.
+    MyBeli is a Phoenix LiveView application (Elixir, Phoenix, Ecto, PostgreSQL), deployed as one
+    Docker image reused across every client and configured entirely at runtime through environment
+    variables (client slug, host, database URL, upload path). I have deliberately left deployment
+    credentials and customer data out of this public page.
   </p>
 
   <p class="note-box">
@@ -54,12 +71,12 @@ const base = import.meta.env.BASE_URL;
   <figure>
     <img
       class="frame-image"
-      src={`${base}assets/screenshots/mybeli-dashboard.svg`}
-      alt="Placeholder dashboard panel for MyBeli showing products, stock updates, and catalog publishing."
+      src={`${base}assets/screenshots/mybeli-catalog.jpg`}
+      alt="Screenshot of the public MyBeli demo catalog, showing a searchable product grid with names and prices."
     />
     <figcaption>
-      Placeholder dashboard image. Replace with a redacted real screenshot if a public demo becomes
-      available.
+      The public demo catalog — the same view a shop's customers see, running on the demo shop
+      instance.
     </figcaption>
   </figure>
 
@@ -67,7 +84,7 @@ const base = import.meta.env.BASE_URL;
     <img
       class="frame-image"
       src={`${base}assets/screenshots/mybeli-architecture.svg`}
-      alt="Placeholder architecture diagram showing branded shop subdomains pointing into a shared multi-tenant application."
+      alt="Architecture diagram showing branded shop subdomains pointing into a shared multi-tenant application."
     />
     <figcaption>
       Public-safe architecture sketch for the shared multi-tenant model.
@@ -76,7 +93,9 @@ const base = import.meta.env.BASE_URL;
 
   <h2>Public links</h2>
   <ul>
-    <li>Demo: no public demo yet — WIP</li>
-    <!-- <li>Screenshot set: <code>[ADD SCREENSHOT OR RECORDING LINK]</code></li> -->
+    <li>
+      Live: <a href="https://mybeli.my" target="_blank" rel="noreferrer">mybeli.my</a> — the
+      platform landing page, which leads into a public demo catalog.
+    </li>
   </ul>
 </ProjectLayout>

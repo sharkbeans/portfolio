@@ -33,7 +33,7 @@ layered on top, not a replacement for it.
 
 ## Local development
 
-Node `24.18.1` is pinned in [.nvmrc](/home/jytan/Documents/Git/portfolio/.nvmrc:1).
+Node `24.18.1` is pinned in [.nvmrc](.nvmrc).
 
 ```bash
 npm install
@@ -54,7 +54,7 @@ npm run preview
 
 ## GitHub Pages deployment
 
-The workflow lives at [.github/workflows/deploy.yml](/home/jytan/Documents/Git/portfolio/.github/workflows/deploy.yml:1) and does the following:
+The workflow lives at [.github/workflows/deploy.yml](.github/workflows/deploy.yml) and does the following:
 
 1. Checks out the repository.
 2. Sets up Node from `.nvmrc`.
@@ -72,19 +72,19 @@ To enable deployment:
 
 ### Base-path handling
 
-The site is configured with `base: "/portfolio/"` in [astro.config.ts](/home/jytan/Documents/Git/portfolio/astro.config.ts:1) to match the current GitHub Pages project URL. Every internal link, asset path, and the sprite sheet URL is built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths — see `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples. If you move to a custom domain at the root, change `base` to `"/"` and update `site` in `src/data/profile.ts`.
+The site is configured with `base: "/portfolio/"` in [astro.config.ts](astro.config.ts) to match the current GitHub Pages project URL. Every internal link, asset path, and the sprite sheet URL is built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths — see `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples. If you move to a custom domain at the root, change `base` to `"/"` and update `site` in `src/data/profile.ts`.
 
 ## Custom-domain setup
 
-This project currently expects to live under a repository subpath (`/portfolio/`). To move to a root custom domain:
+The site currently lives at `https://sharkbeans.github.io/portfolio/` — a repository subpath, with no custom domain configured. To move to a root custom domain later:
 
-1. Replace `site` in [src/data/profile.ts](/home/jytan/Documents/Git/portfolio/src/data/profile.ts:1) with the real domain.
+1. Replace `site` in [src/data/profile.ts](src/data/profile.ts) with the real domain, and update `siteLabel` to match.
 2. Change `base: "/portfolio/"` to `base: "/"` in `astro.config.ts`.
-3. Add a `CNAME` file in `public/` containing only the final domain, for example `sharkbeans.dev`.
+3. Add a `CNAME` file in `public/` containing only the final domain.
 4. Configure your DNS records to point at GitHub Pages.
 5. Rebuild and redeploy.
 
-Do not leave the placeholder domain in place if you want canonical URLs, Open Graph metadata, RSS, sitemap, and `robots.txt` to point to the right host.
+Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those five steps are the whole change — but skipping any of them leaves them pointing at the wrong host.
 
 ## Project structure
 
@@ -204,7 +204,7 @@ landmarks," not "one rect per word."
 
 **Adding a new interactable:** add `data-world-interactable="my-id"` to the element, then add a
 matching entry (`title`, `description`, `href`, `ctaLabel`, `promptLabel`) to
-`worldInteractables` in [src/data/world.ts](/home/jytan/Documents/Git/portfolio/src/data/world.ts:1). Interactables don't need to be solid — see the `about` link in the "elsewhere on the site" list, which is interactable but walk-through so it doesn't block the exit corridor.
+`worldInteractables` in [src/data/world.ts](src/data/world.ts). Interactables don't need to be solid — see the `about` link in the "elsewhere on the site" list, which is interactable but walk-through so it doesn't block the exit corridor.
 
 **Adding a spawn point:** drop `<span data-world-spawn="my-id" aria-hidden="true"></span>` next to
 (not inside) the content it should spawn near.
@@ -331,17 +331,17 @@ world-adjacent touch outside the homepage.
 
 ## Visual theme
 
-- [src/styles/tokens.css](/home/jytan/Documents/Git/portfolio/src/styles/tokens.css:1) — the dark palette (near-black background, warm off-white text, phosphor-green accent, sparing cyan) and the three font stacks (condensed/grotesque display, sans body, mono metadata/nav).
-- [src/styles/global.css](/home/jytan/Documents/Git/portfolio/src/styles/global.css:1) — base element styles, the subtle static scanline texture, shared layout primitives.
-- [src/styles/world.css](/home/jytan/Documents/Git/portfolio/src/styles/world.css:1) — canvas positioning, reading-mode toggle, interactable highlight, debug overlay, preview dialog.
-- [src/styles/prose.css](/home/jytan/Documents/Git/portfolio/src/styles/prose.css:1) — long-form article/MDX typography, unchanged in structure from before, just re-themed via CSS variables.
+- [src/styles/tokens.css](src/styles/tokens.css) — the dark palette (near-black background, warm off-white text, phosphor-green accent, sparing cyan) and the three font stacks (condensed/grotesque display, sans body, mono metadata/nav).
+- [src/styles/global.css](src/styles/global.css) — base element styles, the subtle static scanline texture, shared layout primitives.
+- [src/styles/world.css](src/styles/world.css) — canvas positioning, reading-mode toggle, interactable highlight, debug overlay, preview dialog.
+- [src/styles/prose.css](src/styles/prose.css) — long-form article/MDX typography, unchanged in structure from before, just re-themed via CSS variables.
 
 No `@font-face`/webfonts are loaded — every font stack falls back through system fonts, so there's
 nothing extra to download.
 
 ## Changing the handle
 
-Update the public identity in [src/data/profile.ts](/home/jytan/Documents/Git/portfolio/src/data/profile.ts:1):
+Update the public identity in [src/data/profile.ts](src/data/profile.ts):
 
 - `handle`
 - `siteLabel`
@@ -357,14 +357,15 @@ No `fullName` field is used anywhere in the site.
 
 Edit:
 
-- [src/data/profile.ts](/home/jytan/Documents/Git/portfolio/src/data/profile.ts:1) for global site metadata and public email label
-- [src/data/socials.ts](/home/jytan/Documents/Git/portfolio/src/data/socials.ts:1) for GitHub and other public profiles
+- [src/data/profile.ts](src/data/profile.ts) for global site metadata
+- [src/data/socials.ts](src/data/socials.ts) for GitHub and other public profiles
 
-Placeholder values are intentionally visible until they are replaced.
+Contact info (email) is intentionally omitted from the public site. Unset placeholder values are
+kept commented out in `socials.ts` and `uses.ts` rather than shown live.
 
 ## Adding or updating projects
 
-Project summary data lives in [src/data/projects.ts](/home/jytan/Documents/Git/portfolio/src/data/projects.ts:1).
+Project summary data lives in [src/data/projects.ts](src/data/projects.ts).
 
 To add a project:
 
@@ -378,12 +379,12 @@ To add a project:
 
 Current case-study pages:
 
-- [src/pages/projects/objekt-tools.astro](/home/jytan/Documents/Git/portfolio/src/pages/projects/objekt-tools.astro:1)
-- [src/pages/projects/mybeli.astro](/home/jytan/Documents/Git/portfolio/src/pages/projects/mybeli.astro:1)
+- [src/pages/projects/objekt-tools.astro](src/pages/projects/objekt-tools.astro)
+- [src/pages/projects/mybeli.astro](src/pages/projects/mybeli.astro)
 
 ## Adding blog posts
 
-Blog content uses Astro content collections with MDX files in [src/content/blog](/home/jytan/Documents/Git/portfolio/src/content/blog).
+Blog content uses Astro content collections with MDX files in [src/content/blog](src/content/blog).
 
 Required frontmatter:
 
@@ -402,17 +403,17 @@ Optional frontmatter:
 To add a new post:
 
 1. Create a new `.md` or `.mdx` file in `src/content/blog/`.
-2. Add frontmatter matching the schema in [src/content.config.ts](/home/jytan/Documents/Git/portfolio/src/content.config.ts:1).
+2. Add frontmatter matching the schema in [src/content.config.ts](src/content.config.ts).
 3. Write the article body.
 4. Set `draft: false` when the post is ready to be treated as published.
 
 ## Updating the Uses page
 
-Edit [src/data/uses.ts](/home/jytan/Documents/Git/portfolio/src/data/uses.ts:1). The page is data-driven, so you usually do not need to touch the Astro template unless you want to change layout. A short teaser for this page also appears on the homepage as one of the walkable landmarks.
+Edit [src/data/uses.ts](src/data/uses.ts). The page is data-driven, so you usually do not need to touch the Astro template unless you want to change layout. A short teaser for this page also appears on the homepage as one of the walkable landmarks.
 
 ## Future API integration
 
-[src/services/api.ts](/home/jytan/Documents/Git/portfolio/src/services/api.ts:1) is a small placeholder service layer for future public-data fetches.
+[src/services/api.ts](src/services/api.ts) is a small placeholder service layer for future public-data fetches.
 
 Important constraints:
 
@@ -436,13 +437,13 @@ Possible later expansions:
 
 `/stats` renders a GitHub contribution calendar, language mix, a commit-time-of-day histogram, and
 a top-repos list. All of it is fetched at build time by
-[scripts/fetch-github-stats.mjs](/home/jytan/Documents/Git/portfolio/scripts/fetch-github-stats.mjs:1)
+[scripts/fetch-github-stats.mjs](scripts/fetch-github-stats.mjs)
 and written to `src/data/generated/github.json`, which
-[src/data/github.ts](/home/jytan/Documents/Git/portfolio/src/data/github.ts:1) types and re-exports
+[src/data/github.ts](src/data/github.ts) types and re-exports
 for the page and its components
-([ContribGraph](/home/jytan/Documents/Git/portfolio/src/components/ContribGraph.astro:1),
-[LanguageBar](/home/jytan/Documents/Git/portfolio/src/components/LanguageBar.astro:1),
-[CommitClock](/home/jytan/Documents/Git/portfolio/src/components/CommitClock.astro:1)). Nothing on
+([ContribGraph](src/components/ContribGraph.astro),
+[LanguageBar](src/components/LanguageBar.astro),
+[CommitClock](src/components/CommitClock.astro)). Nothing on
 this page makes a request from the visitor's browser.
 
 The contribution calendar and commit-time histogram are only available through GitHub's GraphQL
@@ -521,7 +522,8 @@ Top Repositories; every other private repo stays folded in anonymously as before
 
 ## Known limitations
 
-- Several links and content fields are still visible placeholders until public values are supplied.
+- Two blog posts remain visible drafts. Drafts render with `noindex` but are still listed in the sitemap.
+- The MyBeli architecture image is an illustrative SVG diagram rather than a real screenshot, by design (nothing to screenshot for that part of the system).
 - The world system currently exists only on the homepage, by design — other pages stay simple and fast.
 - Axis-separated collision resolution is intentionally simple (no full physics/spatial-hash solver); in rare multi-rect-overlap cases the player can be nudged slightly further than the strictly nearest free point. This has not been an issue in testing at the current homepage density.
 - The Open Graph image is an SVG placeholder; you may want a custom PNG later for wider crawler compatibility.

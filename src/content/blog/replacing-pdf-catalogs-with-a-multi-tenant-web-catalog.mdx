@@ -1,19 +1,61 @@
 ---
 title: Replacing PDF catalogs with a multi-tenant web catalog
-description: Placeholder draft for a future post about the problem MyBeli is trying to solve.
-pubDate: 2026-07-18
+description: How MyBeli turns a PDF-and-resend workflow into a public catalog that updates itself, and what it took to serve many shops from one app.
+pubDate: 2026-08-12
 tags:
   - elixir
   - product-design
   - multi-tenant
-draft: true
+draft: false
 ---
 
-This is a visible draft placeholder.
+The problem MyBeli set out to fix is small and specific: a shop owner updates a price or a stock
+count, then has to re-export a PDF and resend it to everyone who might be looking at the old one.
+There's no single source of truth, just whichever copy of the PDF a customer happens to have open.
+Multiply that across a handful of shops and it stops being a minor annoyance and starts being the
+actual bottleneck in how often a shop owner is willing to update their catalog at all.
 
-The eventual post should explain:
+## From PDF to public catalog
 
-- Why manually updated PDFs keep creating unnecessary work for small shops.
-- How a public catalog changes the update loop for product and inventory information.
-- What makes branded subdomains useful in a shared multi-client system.
-- Which parts of the architecture can be described publicly without leaking internal details.
+The fix is unglamorous on purpose: a catalog that lives on the web instead of in a file. A shop
+owner edits a product, and the public page is already current — there's no export step, no resend,
+no "which version is this" question for the customer on the other end. The lightweight management
+surface behind it exists for exactly one reason, to make that edit fast enough that it actually
+happens when a price changes, instead of getting batched up for the next PDF cycle.
+
+That also meant supporting bulk edits, since real shops don't update one product at a time. MyBeli
+can import a shop's product list from an Excel workbook — validated strictly, versioned, and shown
+as a diff the shop owner confirms before it goes live. That keeps the convenience of "just email me
+a spreadsheet" without losing the safety of a UI that shows exactly what's about to change.
+
+## One system, not one site per client
+
+The other decision was about how to serve more than one shop without it turning into a pile of
+one-off deployments. Each shop gets its own catalog identity, product set, and branded subdomain
+(`shopname.mybeli.my`), but every one of them runs from the same codebase and the same Docker
+image. What's different per client is runtime configuration — client slug, host, database URL —
+not a forked copy of the app. Each client also gets its own PostgreSQL database rather than sharing
+rows in one table, so onboarding a new shop doesn't mean touching a shared schema, and one client's
+data can't leak into another's.
+
+That shape is what makes adding a client a repeatable process instead of a bespoke one: create a
+database, write an environment file, add an nginx route and a DNS record, deploy the same image.
+It's more upfront structure than just building a site per client, but it's the only way "one more
+shop" stays cheap after the tenth one.
+
+## The platform site is a client too
+
+The apex domain, `mybeli.my`, is handled as a special case of that same client model rather than a
+separate app: instead of redirecting into a catalog, it serves a public landing page. Scrolling
+that landing page previews a live demo catalog through a "garage door" transition — lift the
+current view, reveal the next one underneath. That's not a MyBeli original; it's the same
+lift/lower page transition this portfolio site uses to move between project pages, brought over
+because it turned out to fit a landing-page-into-a-catalog reveal just as well as it fit
+project-to-project navigation here.
+
+## What's left out here
+
+Deployment credentials, customer data, and framework internals beyond "Phoenix LiveView" stay off
+this page on purpose. The parts worth writing down are the ones that shaped the product: replace
+the PDF loop with a page that's always current, and treat "one more client" as configuration, not a
+new codebase.

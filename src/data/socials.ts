@@ -11,10 +11,6 @@ export const socials: SocialLink[] = [
     label: "GitHub",
     href: profile.github,
   },
-  {
-    label: "Email",
-    note: profile.emailLabel,
-  },
   // {
   //   label: "LinkedIn",
   //   note: "[ADD PUBLIC PROFILE URL]",

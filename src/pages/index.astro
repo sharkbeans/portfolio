@@ -1,8 +1,5 @@
 ---
-import { getCollection } from "astro:content";
-
 import ContribGraphMini from "../components/ContribGraphMini.astro";
-import PostList from "../components/PostList.astro";
 import SocialLinks from "../components/SocialLinks.astro";
 import WorldCanvas from "../components/world/WorldCanvas.astro";
 import { featuredProjects } from "../data/projects";
@@ -13,18 +10,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const base = import.meta.env.BASE_URL;
 const objektTools = featuredProjects.find((project) => project.slug === "objekt-tools");
 const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
-
-const recentPosts = (await getCollection("blog"))
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 3)
-  .map((entry) => ({
-    url: `${base}blog/${entry.id}/`,
-    title: entry.data.title,
-    description: entry.data.description,
-    tags: entry.data.tags,
-    draft: entry.data.draft,
-    pubDate: entry.data.pubDate,
-  }));
 ---
 
 <BaseLayout title={profile.siteLabel} description={profile.homeBlurb}>
@@ -40,7 +25,6 @@ const recentPosts = (await getCollection("blog"))
         <p data-world-solid>{profile.homeBlurb}</p>
         <p class="inline-links" data-world-solid>
           <a href="#selected-projects">selected projects</a>
-          <a href="#recent-writing">recent writing</a>
           <a href="#github-activity">github activity</a>
           <a href="#public-links">public links</a>
         </p>
@@ -96,19 +80,6 @@ const recentPosts = (await getCollection("blog"))
 
       <hr data-world-solid />
 
-      <section id="recent-writing" class="world-block world-block--right">
-        <div data-world-solid data-world-interactable="writing">
-          <p class="eyebrow">blog</p>
-          <h2 class="section-title">Recent writing</h2>
-        </div>
-        <span data-world-spawn="writing" aria-hidden="true"></span>
-        <p data-world-solid>
-          The archive is intentionally simple. Right now the posts are visible draft placeholders
-          rather than pretending to be finished essays.
-        </p>
-        <PostList posts={recentPosts} />
-      </section>
-
       <section id="uses-and-tools" class="world-block world-block--left">
         <div data-world-solid data-world-interactable="uses">
           <p class="eyebrow">uses</p>
@@ -116,8 +87,7 @@ const recentPosts = (await getCollection("blog"))
         </div>
         <span data-world-spawn="uses" aria-hidden="true"></span>
         <p data-world-solid>
-          Software, editors, and hardware notes, kept as visible placeholders until every field is
-          filled in. See the <a href={`${base}uses`}>full uses page</a>.
+          Software, editors, and hardware notes. See the <a href={`${base}uses`}>full uses page</a>.
         </p>
       </section>
 
@@ -152,9 +122,6 @@ const recentPosts = (await getCollection("blog"))
         <ul class="plain-list route-list" data-world-solid>
           <li>
             <a href={`${base}projects`}>/projects</a> for the full archive and case studies.
-          </li>
-          <li>
-            <a href={`${base}blog`}>/blog</a> for notes and project write-ups.
           </li>
           <li>
             <a href={`${base}stats`}>/stats</a> for GitHub activity and language stats.

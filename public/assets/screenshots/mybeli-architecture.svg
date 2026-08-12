@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
-  <title id="title">MyBeli architecture placeholder</title>
+  <title id="title">MyBeli architecture diagram</title>
   <desc id="desc">A public-safe diagram showing branded subdomains flowing into a shared application.</desc>
   <rect width="960" height="600" fill="#f4efe3" />
   <rect x="40" y="40" width="880" height="520" rx="16" fill="#fbf8ef" stroke="#b8ab98" stroke-width="4" />

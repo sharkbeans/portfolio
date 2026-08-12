@@ -13,8 +13,6 @@ export type UsesSection = {
 export const usesSections: UsesSection[] = [
   {
     title: "Software",
-    intro:
-      "Only a few tools are confirmed so far, so the rest stay as visible placeholders until they are replaced.",
     entries: [
       { name: "OS", detail: "Linux" },
       { name: "Browser", detail: "Firefox" },
@@ -54,17 +52,13 @@ export const usesSections: UsesSection[] = [
       { name: "Cooling", detail: "Cooler Master MasterLiquid ML240L V2 RGB" },
     ],
   },
-  // {
-  //   title: "Hardware — PC 2",
-  //   entries: [
-  //     { name: "Motherboard", detail: "[ADD MOTHERBOARD]" },
-  //     { name: "CPU", detail: "[ADD CPU]" },
-  //     { name: "GPU", detail: "[ADD GPU]" },
-  //     { name: "RAM", detail: "[ADD RAM]" },
-  //     { name: "Storage", detail: "[ADD STORAGE]" },
-  //     { name: "Cooling", detail: "[ADD COOLING]" },
-  //   ],
-  // },
+  {
+    title: "Laptop",
+    entries: [
+      { name: "Model", detail: "Lenovo ThinkPad T14 Gen 1" },
+      { name: "OS", detail: "Dual-boot — LMDE 7 and Windows 11" },
+    ],
+  },
   {
     title: "Peripherals",
     entries: [
