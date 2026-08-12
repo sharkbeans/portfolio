@@ -193,10 +193,16 @@ const chartData = { points, monthTicks, weekCount: weeks.length, max };
     return 1;
   }
 
-  const dataEl = document.getElementById("contrib-chart-data");
-  const canvas = document.getElementById("contrib-chart");
+  let chart: Chart | undefined;
 
-  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+  function render() {
+    chart?.destroy();
+    chart = undefined;
+
+    const dataEl = document.getElementById("contrib-chart-data");
+    const canvas = document.getElementById("contrib-chart");
+    if (!(dataEl?.textContent && canvas instanceof HTMLCanvasElement)) return;
+
     const { points, monthTicks, weekCount, max }: ChartPayload = JSON.parse(dataEl.textContent);
 
     const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -223,7 +229,7 @@ const chartData = { points, monthTicks, weekCount: weeks.length, max };
       },
     };
 
-    new Chart(canvas, {
+    chart = new Chart(canvas, {
       type: "matrix",
       data: {
         datasets: [
@@ -289,4 +295,7 @@ const chartData = { points, monthTicks, weekCount: weeks.length, max };
       plugins: [monthLabelPlugin],
     });
   }
+
+  render();
+  document.addEventListener("astro:page-load", render);
 </script>

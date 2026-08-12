@@ -63,13 +63,19 @@ const chartData = clock ? { labels, hours: clock.hours } : null;
 
   type ChartPayload = { labels: string[]; hours: number[] };
 
-  const dataEl = document.getElementById("commit-clock-data");
-  const canvas = document.getElementById("commit-clock-chart");
+  let chart: Chart | undefined;
 
-  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+  function render() {
+    chart?.destroy();
+    chart = undefined;
+
+    const dataEl = document.getElementById("commit-clock-data");
+    const canvas = document.getElementById("commit-clock-chart");
+    if (!(dataEl?.textContent && canvas instanceof HTMLCanvasElement)) return;
+
     const { labels, hours }: ChartPayload = JSON.parse(dataEl.textContent);
 
-    new Chart(canvas, {
+    chart = new Chart(canvas, {
       type: "bar",
       data: {
         labels,
@@ -124,4 +130,7 @@ const chartData = clock ? { labels, hours: clock.hours } : null;
       },
     });
   }
+
+  render();
+  document.addEventListener("astro:page-load", render);
 </script>

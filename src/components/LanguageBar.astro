@@ -131,10 +131,16 @@ const chartData = { segments, total };
   type Segment = { name: string; size: number; color: string };
   type ChartPayload = { segments: Segment[]; total: number };
 
-  const dataEl = document.getElementById("language-bar-data");
-  const canvas = document.getElementById("language-bar-chart");
+  let chart: Chart | undefined;
 
-  if (dataEl?.textContent && canvas instanceof HTMLCanvasElement) {
+  function render() {
+    chart?.destroy();
+    chart = undefined;
+
+    const dataEl = document.getElementById("language-bar-data");
+    const canvas = document.getElementById("language-bar-chart");
+    if (!(dataEl?.textContent && canvas instanceof HTMLCanvasElement)) return;
+
     const { segments, total }: ChartPayload = JSON.parse(dataEl.textContent);
 
     function formatPct(size: number): string {
@@ -142,7 +148,7 @@ const chartData = { segments, total };
       return value >= 10 ? `${value.toFixed(0)}%` : `${value.toFixed(1)}%`;
     }
 
-    new Chart(canvas, {
+    chart = new Chart(canvas, {
       type: "bar",
       data: {
         labels: [""],
@@ -176,4 +182,7 @@ const chartData = { segments, total };
       },
     });
   }
+
+  render();
+  document.addEventListener("astro:page-load", render);
 </script>
