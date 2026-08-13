@@ -1,8 +1,8 @@
 # sharkbeans-site
 
 A static personal developer website built with Astro, TypeScript, and KAPLAY. The homepage is a
-typographic world: a small sprite walks around the actual rendered content — headings, project
-blocks, dividers — which double as the level geometry. It is intentionally not a resume or CV
+typographic world: a small sprite walks around the actual rendered content, headings, project
+blocks, dividers, which double as the level geometry. It is intentionally not a resume or CV
 site. The main identity is a public handle, not a full legal name.
 
 ## Purpose
@@ -72,11 +72,11 @@ To enable deployment:
 
 ### Base-path handling
 
-The site is configured with `base: "/portfolio/"` in [astro.config.ts](astro.config.ts) to match the current GitHub Pages project URL. Every internal link, asset path, and the sprite sheet URL is built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths — see `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples. If you move to a custom domain at the root, change `base` to `"/"` and update `site` in `src/data/profile.ts`.
+The site is configured with `base: "/portfolio/"` in [astro.config.ts](astro.config.ts) to match the current GitHub Pages project URL. Every internal link, asset path, and the sprite sheet URL is built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths. See `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples. If you move to a custom domain at the root, change `base` to `"/"` and update `site` in `src/data/profile.ts`.
 
 ## Custom-domain setup
 
-The site currently lives at `https://sharkbeans.github.io/portfolio/` — a repository subpath, with no custom domain configured. To move to a root custom domain later:
+The site currently lives at `https://sharkbeans.github.io/portfolio/`, a repository subpath, with no custom domain configured. To move to a root custom domain later:
 
 1. Replace `site` in [src/data/profile.ts](src/data/profile.ts) with the real domain, and update `siteLabel` to match.
 2. Change `base: "/portfolio/"` to `base: "/"` in `astro.config.ts`.
@@ -84,7 +84,7 @@ The site currently lives at `https://sharkbeans.github.io/portfolio/` — a repo
 4. Configure your DNS records to point at GitHub Pages.
 5. Rebuild and redeploy.
 
-Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those five steps are the whole change — but skipping any of them leaves them pointing at the wrong host.
+Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those five steps are the whole change, but skipping any of them leaves them pointing at the wrong host.
 
 ## Project structure
 
@@ -150,7 +150,7 @@ scripts/
 
 assets-src/
 └── vfx/
-    └── ppvfx-general-pack-1/        full third-party VFX pack, not served — see its NOTICE.md
+    └── ppvfx-general-pack-1/        full third-party VFX pack, not served; see its NOTICE.md
 
 public/
 ├── assets/
@@ -176,7 +176,7 @@ space over the rendered page, and the DOM itself supplies the collision geometry
 `DomCollisionSystem` (`src/components/world/DomCollisionSystem.ts`) queries elements marked with
 `data-world-*` attributes, reads their `getBoundingClientRect()`, and converts each rect to
 **document coordinates** (`rect + window.scrollX/scrollY`). Because everything is cached in
-document space, scrolling never invalidates the cache — only real layout changes do. Rects are
+document space, scrolling never invalidates the cache; only real layout changes do. Rects are
 recomputed on:
 
 - initial load
@@ -186,7 +186,7 @@ recomputed on:
 - a `ResizeObserver` on the homepage's single content wrapper (`#world-content`)
 
 This keeps `getBoundingClientRect()` calls batched and off the per-frame hot path. Rendering reads
-the cached rects and just subtracts the *current* scroll position — no re-measurement per frame.
+the cached rects and just subtracts the *current* scroll position, with no re-measurement per frame.
 
 ### `data-world-*` attributes
 
@@ -198,13 +198,13 @@ the cached rects and just subtracts the *current* scroll position — no re-meas
 | `data-world-bounds` | Optional. If present, its rect defines the player's movement bounds instead of the whole `#world-content` wrapper. |
 
 **Adding a new solid element:** add `data-world-solid` to a heading, image, code block, or grouped
-content block — not to individual body-text lines, inline links, tags, or list items. Prefer one
+content block, not to individual body-text lines, inline links, tags, or list items. Prefer one
 rectangle around a whole paragraph/group over many tiny ones; the system is built for "a few dozen
 landmarks," not "one rect per word."
 
 **Adding a new interactable:** add `data-world-interactable="my-id"` to the element, then add a
 matching entry (`title`, `description`, `href`, `ctaLabel`, `promptLabel`) to
-`worldInteractables` in [src/data/world.ts](src/data/world.ts). Interactables don't need to be solid — see the `about` link in the "elsewhere on the site" list, which is interactable but walk-through so it doesn't block the exit corridor.
+`worldInteractables` in [src/data/world.ts](src/data/world.ts). Interactables don't need to be solid; see the `about` link in the "elsewhere on the site" list, which is interactable but walk-through so it doesn't block the exit corridor.
 
 **Adding a spawn point:** drop `<span data-world-spawn="my-id" aria-hidden="true"></span>` next to
 (not inside) the content it should spawn near.
@@ -216,7 +216,7 @@ request, it looks up the marker's current document position and, if that point n
 solid rect (e.g. after a layout change), searches outward in a small spiral for the nearest free
 spot. Placement only happens on explicit triggers: initial load (`"intro"`) and clicking an in-page
 anchor link (`href="#section"`), which finds the `data-world-spawn` marker inside the target
-section and repositions the player there — no forced walking sequence.
+section and repositions the player there, with no forced walking sequence.
 
 ### Replacing the player sprite
 
@@ -227,25 +227,25 @@ node scripts/generate-sprite.mjs
 ```
 
 This writes `public/assets/sprites/player.png` (a 64×64, 4-column × 4-row sheet: one row per
-direction — down, left, right, up — 4 walk frames each, frame 0 doubles as idle) and
+direction (down, left, right, up), 4 walk frames each, frame 0 doubles as idle) and
 `public/assets/sprites/player.json` (frame layout + anim map, for reference/regeneration tooling).
-It's a hand-rolled RGBA PNG encoder using only `node:zlib` — no image dependency.
+It's a hand-rolled RGBA PNG encoder using only `node:zlib`, with no image dependency.
 
-**License:** the sprite is original placeholder art generated for this project — public domain /
+**License:** the sprite is original placeholder art generated for this project: public domain /
 CC0, replace freely. No ripped or unlicensed game assets are used anywhere in this project; the
 only third-party art in the repo is the footstep VFX described in
 [Acknowledgements](#acknowledgements), used under its explicit free license.
 
 To use different art, replace `public/assets/sprites/player.png` (and update the `sliceX`/`sliceY`
 and `anims` in `ANIMS` inside `src/components/world/world.ts` if the frame layout changes).
-`PlayerController`'s state shape (position, velocity, facing, `isMoving`) doesn't need to change —
+`PlayerController`'s state shape (position, velocity, facing, `isMoving`) doesn't need to change;
 only the rendering/anim-name mapping in `world.ts` does.
 
 ### Reading mode
 
 The "Reading mode" button (always visible near the top of the homepage) hides the sprite, disables
 collision-driven movement and the camera's edge-follow scrolling, and restores completely normal
-page scrolling — nothing about the underlying content changes. The preference is remembered for
+page scrolling; nothing about the underlying content changes. The preference is remembered for
 the current tab via `sessionStorage` (`world:reading-mode`).
 
 ### Mobile / responsive fallback
@@ -259,26 +259,26 @@ Manual movement requires both a wide viewport and a fine pointer:
 - **<420px wide:** the sprite is hidden entirely to guarantee there's no chance of covering text
   or causing overflow.
 
-Manual keyboard movement, DOM collision, and camera follow are all inert in this mode — mobile
+Manual keyboard movement, DOM collision, and camera follow are all inert in this mode; mobile
 just gets normal scrolling, which is the point.
 
 ### Weather-reactive foot effects
 
 `WeatherState.ts` fetches Penang's current precipitation and day/night state from
 [Open-Meteo](https://open-meteo.com/) (no API key required), cached in `sessionStorage` for ~20
-minutes, and falls back silently to a clear/day default if the request fails — this is a decorative
+minutes, and falls back silently to a clear/day default if the request fails. This is a decorative
 detail, so an error state would be more distracting than just not showing rain. `FootEffectSystem.ts`
 uses only the `condition` half of that snapshot to spawn a small, short-lived splash mark at the
 player's foot point in step with their stride, only while it's raining in Penang. Nothing spawns
 while idle, crouched, the weather is clear, or with `prefers-reduced-motion: reduce` set. This is
-intentionally scoped to the player's immediate footprint rather than an ambient page-wide overlay —
+intentionally scoped to the player's immediate footprint rather than an ambient page-wide overlay;
 see the sprite asset in [Acknowledgements](#acknowledgements).
 
-The `period` (day/night) value is tracked but not yet wired to any visual — it exists so a future
+The `period` (day/night) value is tracked but not yet wired to any visual; it exists so a future
 lighting tweak doesn't need a new fetch, and so the dev debug panel below has something concrete to
 toggle.
 
-**Dev-only debug panel:** in `astro dev` (never in a production build — gated on
+**Dev-only debug panel:** in `astro dev` (never in a production build, gated on
 `import.meta.env.DEV`, statically stripped from the build output), a small panel in the
 bottom-right lets you force `condition` (clear/rain) and `period` (day/night) instead of waiting on
 real Penang weather, plus a "live" button to clear the override. The `?debugWorld=1` collision
@@ -300,7 +300,7 @@ collision-body counts, current mode). It never renders unless explicitly request
 - Resize handling is debounced (~150ms for collision geometry, ~200ms for the KAPLAY canvas
   remount described below).
 - KAPLAY sizes its internal drawing buffer from the canvas's *parent* element's size unless you
-  pass `width`/`height` explicitly — `world.ts` always passes the live viewport size and, because
+  pass `width`/`height` explicitly. `world.ts` always passes the live viewport size and, because
   that internal buffer isn't resized in place by the engine, a real viewport resize is handled by
   disposing (`k.quit()`) and re-mounting the renderer rather than fighting a stale buffer.
 - KAPLAY itself is loaded via a dynamic `import()` scheduled with `requestIdleCallback`, after the
@@ -309,14 +309,14 @@ collision-body counts, current mode). It never renders unless explicitly request
 ## Accessibility
 
 - All meaningful content is semantic HTML, fully present and readable without any JavaScript.
-- The canvas is `pointer-events: none` at all times — it never intercepts clicks or touch
+- The canvas is `pointer-events: none` at all times; it never intercepts clicks or touch
   scrolling. Every real interactive element (project links, nav, buttons) is a normal DOM node
   underneath it.
 - Keyboard movement/interact keys are never intercepted while focus is inside an input, textarea,
   select, contenteditable region, or an open dialog (see `isTypingTarget`/`isPaused` in
   `InputController.ts`).
 - Tab navigation and native focus outlines work exactly as on any other page.
-- The proximity highlight never relies on color alone — it pairs an outline with a `›` marker.
+- The proximity highlight never relies on color alone; it pairs an outline with a `›` marker.
 - `prefers-reduced-motion: reduce` disables the smooth camera-follow easing (snaps instead) and
   the global reduced-motion rules in `global.css` still apply site-wide.
 - No audio anywhere.
@@ -325,18 +325,18 @@ collision-body counts, current mode). It never renders unless explicitly request
 ## Other routes
 
 `/projects`, `/blog`, `/stats`, `/uses`, `/about`, `/lab`, and individual project/post pages carry the same
-dark theme but do not mount the world system — they're plain, fast, readable pages. `Footer.astro`
+dark theme but do not mount the world system; they're plain, fast, readable pages. `Footer.astro`
 has a tiny purely-decorative CSS `steps()` sprite animation (same sheet, no KAPLAY) as the only
 world-adjacent touch outside the homepage.
 
 ## Visual theme
 
-- [src/styles/tokens.css](src/styles/tokens.css) — the dark palette (near-black background, warm off-white text, phosphor-green accent, sparing cyan) and the three font stacks (condensed/grotesque display, sans body, mono metadata/nav).
-- [src/styles/global.css](src/styles/global.css) — base element styles, the subtle static scanline texture, shared layout primitives.
-- [src/styles/world.css](src/styles/world.css) — canvas positioning, reading-mode toggle, interactable highlight, debug overlay, preview dialog.
-- [src/styles/prose.css](src/styles/prose.css) — long-form article/MDX typography, unchanged in structure from before, just re-themed via CSS variables.
+- [src/styles/tokens.css](src/styles/tokens.css): the dark palette (near-black background, warm off-white text, phosphor-green accent, sparing cyan) and the three font stacks (condensed/grotesque display, sans body, mono metadata/nav).
+- [src/styles/global.css](src/styles/global.css): base element styles, the subtle static scanline texture, shared layout primitives.
+- [src/styles/world.css](src/styles/world.css): canvas positioning, reading-mode toggle, interactable highlight, debug overlay, preview dialog.
+- [src/styles/prose.css](src/styles/prose.css): long-form article/MDX typography, unchanged in structure from before, just re-themed via CSS variables.
 
-No `@font-face`/webfonts are loaded — every font stack falls back through system fonts, so there's
+No `@font-face`/webfonts are loaded; every font stack falls back through system fonts, so there's
 nothing extra to download.
 
 ## Changing the handle
@@ -447,7 +447,7 @@ for the page and its components
 this page makes a request from the visitor's browser.
 
 The contribution calendar and commit-time histogram are only available through GitHub's GraphQL
-API, which always requires auth — there's no public, unauthenticated equivalent. The repo/language
+API, which always requires auth; there's no public, unauthenticated equivalent. The repo/language
 data doesn't need a token, so `github.json` ships with that part live and the calendar/clock as a
 zero-filled placeholder, matching the "visible placeholder" convention used on the Uses page.
 
@@ -463,14 +463,14 @@ To make the calendar and commit clock live:
    stays fresh even on days with no commits here.
 
 Without the secret, the workflow step logs a warning and the build proceeds with whatever is
-currently committed in `github.json` — a missing token never breaks the deploy.
+currently committed in `github.json`; a missing token never breaks the deploy.
 
 To refresh the fallback locally: `GH_STATS_TOKEN=<token> node scripts/fetch-github-stats.mjs`.
 
 ### Folding in private repos (language mix + commit clock only)
 
 `GH_STATS_TOKEN` (`read:user`) can't see repo contents at all, so private repos are invisible to
-the language mix and commit clock by default — only public repos are scanned. To auto-discover
+the language mix and commit clock by default; only public repos are scanned. To auto-discover
 every private repo on the account and fold its language bytes and commit timestamps into those two
 aggregates, without ever exposing the repo itself (name, description, URL, and star count are
 never fetched beyond what identifies it for the query, let alone written to `github.json`):
@@ -478,22 +478,22 @@ never fetched beyond what identifies it for the query, let alone written to `git
 1. Create a **fine-grained PAT** scoped to **"All repositories"** (not hand-picked ones, so newly
    created private repos are picked up automatically) with repository permission
    **Contents: Read-only** and nothing else. This is intentionally a separate token from
-   `GH_STATS_TOKEN` — it stays read-only and content-scoped, so a leak of either token exposes as
+   `GH_STATS_TOKEN`; it stays read-only and content-scoped, so a leak of either token exposes as
    little as possible.
 2. Add it as a repository secret named `GH_STATS_PRIVATE_TOKEN`.
 
-It's optional and independent of `GH_STATS_TOKEN` — omit it and private-repo folding is silently
+It's optional and independent of `GH_STATS_TOKEN`; omit it and private-repo folding is silently
 skipped, same graceful-degradation behavior as the main token.
 
 ### Naming a private repo in Top Repositories
 
-By default every private repo folded in above stays anonymous — its name is read (to run the
+By default every private repo folded in above stays anonymous; its name is read (to run the
 query) but never written to `github.json`. Printing a repo's name on a public page makes it
 search-indexable even though the link itself 404s for non-collaborators, so naming one is an
 explicit, per-repo opt-in, not automatic:
 
 Add a repository **variable** (Settings → Secrets and variables → Actions → Variables tab, not
-Secrets — it's just repo names, not sensitive) named `GH_STATS_SHOWCASE_REPOS` with a
+Secrets; it's just repo names, not sensitive) named `GH_STATS_SHOWCASE_REPOS` with a
 comma-separated `owner/name` list, e.g. `sharkbeans/my-private-elixir-app`. Only repos listed there
 get their name, description, URL, and star count written out and shown (with a "private" badge) in
 Top Repositories; every other private repo stays folded in anonymously as before.
@@ -503,7 +503,7 @@ Top Repositories; every other private repo stays folded in anonymously as before
 - no full legal name is displayed
 - no resume or CV page exists
 - no employment timeline exists
-- no ripped or unlicensed game assets are used anywhere — the one exception is properly licensed
+- no ripped or unlicensed game assets are used anywhere; the one exception is properly licensed
   and credited in [Acknowledgements](#acknowledgements)
 - all current data is local and static
 
@@ -515,16 +515,16 @@ Top Repositories; every other private repo stays folded in anonymously as before
   free-for-personal-and-commercial-projects license (modification allowed, reselling the pack
   itself is not; attribution isn't required by the license but is given here anyway). The full pack
   (dust, sparks, smoke, pulses, beams, debris, and more) is kept in
-  `assets-src/vfx/ppvfx-general-pack-1/` — not served by the site, just checked in so future effects
+  `assets-src/vfx/ppvfx-general-pack-1/`, not served by the site, just checked in so future effects
   don't require re-downloading. See that folder's `NOTICE.md` for details.
 - Penang weather/day-night data comes from [Open-Meteo](https://open-meteo.com/), a free,
-  keyless weather API — see [Weather-reactive foot effects](#weather-reactive-foot-effects).
+  keyless weather API; see [Weather-reactive foot effects](#weather-reactive-foot-effects).
 
 ## Known limitations
 
 - Two blog posts remain visible drafts. Drafts render with `noindex` but are still listed in the sitemap.
 - The MyBeli architecture image is an illustrative SVG diagram rather than a real screenshot, by design (nothing to screenshot for that part of the system).
-- The world system currently exists only on the homepage, by design — other pages stay simple and fast.
+- The world system currently exists only on the homepage, by design; other pages stay simple and fast.
 - Axis-separated collision resolution is intentionally simple (no full physics/spatial-hash solver); in rare multi-rect-overlap cases the player can be nudged slightly further than the strictly nearest free point. This has not been an issue in testing at the current homepage density.
 - The Open Graph image is an SVG placeholder; you may want a custom PNG later for wider crawler compatibility.
 - The current project pages for private work stay intentionally high-level to avoid exposing sensitive internals.

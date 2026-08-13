@@ -1,14 +1,14 @@
-Source: DryRain — Pixel Platformer VFX General Pack 1
+Source: DryRain, Pixel Platformer VFX General Pack 1
 https://dryrainent.itch.io/ppvfx-general-1
 
 License: free for personal and commercial use, modification allowed. Reselling
 the pack itself is not permitted. Attribution is not required by the license
-but is given anyway — see the root [README.md](../../../README.md) Acknowledgements section.
+but is given anyway; see the root [README.md](../../../README.md) Acknowledgements section.
 
 This is the full pack as downloaded, kept here so other effects (dust,
 sparks, smoke, pulses, beams, debris) are available without re-downloading
 if a future feature wants them. Nothing in this folder is served by the
-site — `public/` is what actually ships. Currently in live use,
+site; `public/` is what actually ships. Currently in live use,
 cropped/copied into `public/assets/vfx/`:
 
 - `splash_small.png` -> `public/assets/vfx/footstep-splash.png`

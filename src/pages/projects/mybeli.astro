@@ -42,7 +42,7 @@ const base = import.meta.env.BASE_URL;
     The public-safe version of the architecture is straightforward: each shop has its own catalog
     identity, product set, and management workflow, while the application still behaves like one
     shared system. Every client runs from the same codebase and image, deployed separately with
-    Docker Compose behind nginx, each with its own PostgreSQL database — there is no shared
+    Docker Compose behind nginx, each with its own PostgreSQL database. There is no shared
     row-level multi-tenancy, which keeps one client's data fully isolated from another's. That
     keeps onboarding and maintenance much simpler than running a custom codebase for every client.
   </p>
@@ -51,7 +51,7 @@ const base = import.meta.env.BASE_URL;
   <p>
     The apex domain, <code>mybeli.my</code>, is a special case of the same client model: it runs
     the public landing page instead of redirecting straight into a catalog. Scrolling the landing
-    page previews the live demo catalog with a "garage door" transition — the same lift/lower page
+    page previews the live demo catalog with a "garage door" transition, the same lift/lower page
     transition this portfolio site uses for its own project pages, borrowed over because it turned
     out to be a good fit for revealing a catalog underneath a landing page too.
   </p>
@@ -75,7 +75,7 @@ const base = import.meta.env.BASE_URL;
       alt="Screenshot of the public MyBeli demo catalog, showing a searchable product grid with names and prices."
     />
     <figcaption>
-      The public demo catalog — the same view a shop's customers see, running on the demo shop
+      The public demo catalog: the same view a shop's customers see, running on the demo shop
       instance.
     </figcaption>
   </figure>
@@ -94,7 +94,7 @@ const base = import.meta.env.BASE_URL;
   <h2>Public links</h2>
   <ul>
     <li>
-      Live: <a href="https://mybeli.my" target="_blank" rel="noreferrer">mybeli.my</a> — the
+      Live: <a href="https://mybeli.my" target="_blank" rel="noreferrer">mybeli.my</a>, the
       platform landing page, which leads into a public demo catalog.
     </li>
   </ul>

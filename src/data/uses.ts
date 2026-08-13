@@ -56,7 +56,7 @@ export const usesSections: UsesSection[] = [
     title: "Laptop",
     entries: [
       { name: "Model", detail: "Lenovo ThinkPad T14 Gen 1" },
-      { name: "OS", detail: "Dual-boot — LMDE 7 and Windows 11" },
+      { name: "OS", detail: "Dual-boot: LMDE 7 and Windows 11" },
     ],
   },
   {

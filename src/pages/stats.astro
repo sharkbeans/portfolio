@@ -38,7 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
       <p class="eyebrow">stats</p>
       <h1>Git activity</h1>
       <p class="lede">
-        Pulled from the GitHub API by a CI step and rendered at build time — no client-side
+        Pulled from the GitHub API by a CI step and rendered at build time: no client-side
         requests, no exposed tokens.
         {
           isLiveGithubData ? (
@@ -60,7 +60,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
         {
           anonymousPrivateCount > 0 ? (
             <>
-              , plus {anonymousPrivateCount} private ones folded in by byte count only — nothing
+              , plus {anonymousPrivateCount} private ones folded in by byte count only. Nothing
               about them is named or linked here.
             </>
           ) : (

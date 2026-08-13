@@ -175,7 +175,7 @@ const chartData = { segments, total };
           tooltip: {
             callbacks: {
               title: () => "",
-              label: (item) => `${item.dataset.label} — ${formatPct(item.parsed.x ?? 0)}`,
+              label: (item) => `${item.dataset.label}: ${formatPct(item.parsed.x ?? 0)}`,
             },
           },
         },
