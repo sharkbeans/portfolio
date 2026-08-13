@@ -1,0 +1,76 @@
+---
+title: Getting Postmark approved for MyBeli
+description: Postmark asked some questions before letting MyBeli send real email, so here's what happened, DKIM and ImprovMX included.
+pubDate: 2026-08-13
+tags:
+  - elixir
+  - email
+  - operations
+draft: false
+---
+
+So MyBeli needs to send email. Not a lot, just the boring stuff: password reset, "hey your quote is
+ready", "hey a new order came in", that kind of thing. Five templates total, no newsletter, no bulk
+anything. Figured signing up for Postmark and shipping would take like an afternoon.
+
+lol no.
+
+## the review
+
+Turns out Postmark doesn't just hand you a working account. You sign up and then a real person
+emails you back going "cool, but what IS this thing, what are you sending, and where did you get
+these email addresses." Which, fair. That last question is really the only question. Every version
+of it boils down to: are you about to spam people. I get why they ask, half the internet's inbox
+problems are exactly this.
+
+Answering honestly was easy enough, we don't have a mailing list, never did, an email only ever
+shows up because a shop owner gave it to us directly or a customer typed their own into a form
+(and even then the field's optional, idk why you'd need it but some people want a paper trail).
+But "trust me bro" in a reply email felt weak. Anyone can type that.
+
+## so I just... made it a page
+
+Instead of writing the answer once and having it disappear into an email thread forever, I stuck it
+on MyBeli's actual landing page. Little section, two dialogs behind footer links so it's not in
+everyone's face, just says plainly here's the five emails we send and here's exactly how we get an
+address. Then the reply to Postmark was basically "see for yourself: [link]" instead of me just
+asserting stuff.
+
+Worked better than I expected honestly. A page you can go check yourself just hits different than a
+paragraph of claims. Also means next time someone asks the same question (support later, an audit,
+whatever) the answer's already sitting there instead of me writing the same email again.
+
+Anyway they approved it. 🎉
+
+## ok but now what
+
+Approval isn't really the finish line though, it's more like now the actual rules kick in. Postmark's
+terms say keep bounce rate under 10% and spam complaints under 0.1%, all the time, not a one-time
+check you pass and forget. And here's the thing that got me: at our volume (like, a handful of
+emails a day per shop) 10% is not the cushion it sounds like. If a shop owner fat-fingers their own
+notification email in settings, literally every order alert to that address bounces, forever, until
+someone notices. That's one typo away from blowing the whole thing. Didn't love that.
+
+Two things I did about it. First went back and actually tightened the email validation on the forms,
+because the old regex was basically "does this contain an @ symbol" lol, which let through stuff
+like `a@b`. Not great when it's going straight to Postmark's API. Second thing, set up DKIM plus a
+custom Return-Path on the domain instead of relying on one single verified sender address. Bonus of
+doing it that way: any address on the domain can send without me manually re-verifying a new one
+every time we onboard another shop. We're planning to add more shops so that part matters a lot,
+didn't want "add a client" to also mean "go click confirm in Postmark's dashboard again."
+
+## and ImprovMX for the other direction
+
+Also needed the domain to receive mail, not just send it, since there's a contact address on the
+landing page now and presumably a Postmark reviewer might actually reply to something. Setting up
+real inbound mail hosting for that felt like massive overkill for what's basically "forward this to
+my actual inbox." So it's just ImprovMX doing forwarding, mail to the domain lands wherever I
+already check email, no server to babysit. Postmark handles sending out, ImprovMX handles stuff
+coming in, two small tools instead of one big one trying to do everything.
+
+## what I'm not putting here
+
+No tokens, no DNS records, no copy-pasting the actual reviewer email, obviously. But yeah that's
+basically the whole saga: a review that's really just asking "did anyone consent to this," answered
+by making the answer checkable instead of just claimed, and now the ongoing job of not blowing a
+bounce budget that's way tighter than it looks at low volume. Onward.
