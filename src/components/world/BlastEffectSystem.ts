@@ -7,10 +7,11 @@ export type BlastEffect = {
 };
 
 /**
- * One-shot blast marks spawned where a bullet detonates (its second wall
- * hit, once BulletSystem's single ricochet is used up). Rendering (which
- * sprite frame) is left to the caller — this class only owns spawn timing
- * and lifetime, same split as FootEffectSystem.
+ * One-shot blast marks spawned wherever a bullet detonates — its second
+ * wall hit (once BulletSystem's single ricochet against a solid is used
+ * up) or simply running out of travel distance while still airborne.
+ * Rendering (which sprite frame) is left to the caller — this class only
+ * owns spawn timing and lifetime, same split as FootEffectSystem.
  */
 export class BlastEffectSystem {
   #effects: BlastEffect[] = [];

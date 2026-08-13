@@ -190,7 +190,7 @@ export function initWorld(root: HTMLElement) {
     }
   }
 
-  placeAtSpawn("intro");
+  player.teleport(1000, 250);
 
   // In-page anchor links (e.g. "selected projects") reposition the player
   // to the nearest spawn marker inside the target section after the
