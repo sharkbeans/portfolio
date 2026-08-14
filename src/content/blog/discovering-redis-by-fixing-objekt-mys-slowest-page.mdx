@@ -1,0 +1,46 @@
+---
+title: actually using Redis to fix objekt.my's slowest page
+description: objekt.my's collection page took up to 12-20 seconds because every visit re-ran the same expensive count from scratch. It was like if a store going through its entire warehouse inventory every time a customer asked "do you have milk?"
+pubDate: 2026-08-14
+tags:
+  - optimization
+  - redis
+draft: true
+---
+
+Opening a collector's profile on objekt.my could take up to 12 seconds.  It was just doing an unnecessary enormous amount of work, on purpose, every single time.
+
+## what it was doing
+
+For every collection a wallet owns, the page asks "does at least one tradable copy of this exist anywhere," which means scanning across roughly 20 million minted objekts on the indexer. That query alone was taking ~10 seconds for a typical collector, next to ~200ms for the ownership lookup sitting right beside it in the same request. And here's the annoying part: about 99% of collections already have a tradable copy. The entire 10 seconds exists to rule out maybe 128 collections out of 15,030. That's a lot of scanning to mostly find "yep, tradable" over and over.
+
+## wait why did i do this
+
+The query was scoped by wallet, because that's naturally how you'd write it like "for this user's owned collections, check XYZ." But "does this collection have a tradable copy" has nothing to do with who's asking. Two completely different people looking at two different profiles that happen to both own, say, an Atom01 SeoYeon 101Z, get the exact same answer. Every profile view was redoing work some other profile view had already paid for, and then throwing the answer away.
+
+Once I noticed that, the fix stopped being "make the query faster" and became "stop running the query per request at all."
+
+## actually utilizing Redis for its true potential 
+
+objekt.my already used Redis for rate limiting, but I would never reached for it myself for anything. It's a database ut it lives entirely in RAM, so reading a key back out is closer to "check a variable" than "run a query." No disk, no query planner, no scanning millions of rows — you already did the work earlier, you're just handing back the answer.
+
+So instead of computing tradability per wallet per request, compute it once for all 15,030 collections, write the whole table into one Redis key, and have every request just read that. A cron job rebuilds it in the background; the request path never touches the slow query again.
+
+## the trick that keeps it from ever going cold
+
+The obvious way to build a cache is give it a TTL and let it expire. I almost did that, then realized it creates an unlucky-visitor problem: whoever's request happens to land right after expiry is the one stuck rebuilding the whole thing, blocking on the same 10-second query the cache was supposed to prevent.
+
+So this one just never expires. The cron job overwrites the Redis key in place every few minutes; refreshing is never eviction. There's also a second, smaller cache sitting in front of it — each server process keeps its own in-memory copy for 60 seconds, so most requests don't even make the Redis round trip, they just read a plain JS object.
+
+## the two rules that keep the numbers honest
+
+The one thing I had to get right: a progress bar shows "owned / total," and if those two numbers ever come from different sources, you can end up rendering something like "3 of 2," which looks broken because it is. So both the numerator and the denominator now read from the exact same sheet, through the exact same helper function, so there's no way for a call site to apply the filter inconsistently.
+
+That still leaves two edge cases. If the sheet doesn't exist yet at all (fresh deploy, wiped Redis), everything is treated as tradable — generous, wrong for maybe 1% of collections, but fast and honest about it (the detail dialog shows "—" instead of a fake percentage). If the sheet exists but one specific collection is missing from it (something minted since the last refresh), that one is treated as not-tradable until the next cron tick fills it in. Neither state blocks a page load, and both self-correct within minutes.
+
+## the actual numbers
+
+First request after a cold start: about 1.1 seconds, and that cost is now shared by every visitor for the next ten minutes instead of paid individually by each one. Warm, it's 10 to 30 milliseconds. Building the full 15,189-collection sheet from scratch takes about 9.6 seconds, but that happens on a timer, in the background, in front of nobody.
+
+Watching a page that used to sit there for 12 seconds come back in single-digit milliseconds felt like actual witchery the first few times, even though the underlying idea is embarrassingly simple: stop computing the same answer twice.
+
