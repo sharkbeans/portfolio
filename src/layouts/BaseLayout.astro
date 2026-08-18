@@ -3,6 +3,7 @@ import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import NavSelector from "../components/NavSelector.astro";
 import { profile } from "../data/profile";
 
 interface Props {
@@ -61,6 +62,7 @@ const ogImageUrl = new URL(ogImage, siteUrl).toString();
       <slot />
     </main>
     <Footer transition:persist />
+    <NavSelector />
     <!-- Rendered as direct children of <body> so they can be positioned against
          the full document rather than the width-constrained <main>. -->
     <slot name="door-layers" />

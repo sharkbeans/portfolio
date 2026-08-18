@@ -1,0 +1,342 @@
+---
+import { iconToSvgRects, navWheelEntries } from "../data/navWheel";
+
+const cards = navWheelEntries.map((entry, index) => ({
+  ...entry,
+  index,
+  svg: iconToSvgRects(entry.icon),
+}));
+---
+
+<!--
+  MGS3-Delta-style quick selector. The pages are one ordered list running
+  through an L-shaped track whose elbow — bottom right — is a stationary
+  selection slot. Scrolling slides the list through that slot rather than
+  moving a cursor around the shape; releasing the key commits whatever
+  landed there. All positioning is done by src/scripts/navSelector.ts,
+  which writes each card's `--sel` (how selected it is, 0-1) and `--vis`
+  (opacity) plus a translate along the track.
+-->
+<div class="navsel" data-nav-selector data-open="false">
+  <div class="navsel__rail navsel__rail--row" aria-hidden="true"></div>
+  <div class="navsel__rail navsel__rail--col" aria-hidden="true"></div>
+  <div class="navsel__elbow" aria-hidden="true"></div>
+
+  {
+    cards.map((card) => (
+      <button
+        type="button"
+        class="navsel__card"
+        data-nav-card={card.index}
+        tabindex="-1"
+        aria-label={`Go to ${card.label}`}
+      >
+        <svg class="navsel__icon" viewBox="0 0 12 12" aria-hidden="true" set:html={card.svg} />
+        <span class="navsel__num">{card.index + 1}</span>
+      </button>
+    ))
+  }
+
+  <div class="navsel__readout" aria-hidden="true">
+    <p class="navsel__eyebrow">navigate</p>
+    <p class="navsel__label" data-nav-label></p>
+    <p class="navsel__path" data-nav-path></p>
+    <p class="navsel__caption" data-nav-caption></p>
+  </div>
+
+  <p class="navsel__hint" aria-hidden="true">
+    <span class="navsel__hint-line navsel__hint-line--closed">hold <kbd>Q</kbd></span>
+    <span class="navsel__hint-line navsel__hint-line--open">scroll &middot; release to go</span>
+  </p>
+
+  <p class="navsel__status" role="status" aria-live="polite" data-nav-status></p>
+</div>
+
+<style>
+  .navsel {
+    --navsel-card: 56px;
+    /* Must match STEP in src/scripts/navSelector.ts. */
+    --navsel-step: 68px;
+    --navsel-reach: calc(var(--navsel-step) * 3);
+    --navsel-tile-off: rgb(16 23 32 / 0.82);
+    --navsel-tile-on: #f0ece1;
+    --navsel-edge-off: rgb(240 236 225 / 0.22);
+    --navsel-edge-on: var(--accent-strong);
+    --navsel-ink-off: #9dabba;
+    --navsel-ink-on: #101720;
+    /* Written every frame by the controller: 0 closed, 1 fully open. */
+    --open: 0;
+
+    /* A zero-size anchor pinned at the bottom-right corner of the elbow tile;
+       every part of the L is positioned relative to this one point. Cleared of
+       the dev-only weather panel that also sits bottom right. */
+    position: fixed;
+    right: clamp(1.25rem, 3vw, 3rem);
+    bottom: clamp(4.5rem, 11vh, 7rem);
+    width: 0;
+    height: 0;
+    z-index: 45;
+    font-family: var(--font-pixel);
+  }
+
+  /* Nothing is positioned until the controller's first render, so the cards
+     would otherwise all flash stacked in the elbow on load. */
+  .navsel:not([data-ready="true"]) {
+    visibility: hidden;
+  }
+
+  html[data-world-reading-mode="true"] .navsel {
+    display: none;
+  }
+
+  .navsel__rail {
+    position: absolute;
+    pointer-events: none;
+    right: calc(var(--navsel-card) / 2);
+    bottom: calc(var(--navsel-card) / 2);
+    opacity: var(--open);
+  }
+
+  .navsel__rail--row {
+    width: var(--navsel-reach);
+    height: 1px;
+    transform-origin: 100% 50%;
+    transform: scaleX(var(--open));
+    background: linear-gradient(to left, rgb(242 184 75 / 0.5), rgb(242 184 75 / 0));
+  }
+
+  .navsel__rail--col {
+    width: 1px;
+    height: var(--navsel-reach);
+    transform-origin: 50% 100%;
+    transform: scaleY(var(--open));
+    background: linear-gradient(to top, rgb(242 184 75 / 0.5), rgb(242 184 75 / 0));
+  }
+
+  /* Corner brackets marking the selection slot. Deliberately fixed to the
+     elbow and never animated: the highlight does not travel, the list does. */
+  .navsel__elbow {
+    position: absolute;
+    right: -6px;
+    bottom: -6px;
+    width: calc(var(--navsel-card) + 12px);
+    height: calc(var(--navsel-card) + 12px);
+    pointer-events: none;
+  }
+
+  .navsel__elbow::before,
+  .navsel__elbow::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--accent);
+    opacity: calc(0.45 + var(--open) * 0.55);
+  }
+
+  .navsel__elbow::before {
+    top: 0;
+    left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .navsel__elbow::after {
+    right: 0;
+    bottom: 0;
+    border-left: 0;
+    border-top: 0;
+  }
+
+  .navsel__card {
+    --sel: 0;
+    --vis: 0;
+
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: var(--navsel-card);
+    height: var(--navsel-card);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    cursor: pointer;
+    opacity: var(--vis);
+    /* Separate from `transform`, which the controller owns. */
+    scale: calc(1 + var(--sel) * 0.07);
+    /* The whole selected/unselected treatment is one interpolation driven by
+       --sel, so the brightening happens over exactly the frames the card
+       spends sliding into the elbow. */
+    border: 1px solid
+      color-mix(in oklab, var(--navsel-edge-off) calc((1 - var(--sel)) * 100%), var(--navsel-edge-on));
+    background: color-mix(
+      in oklab,
+      var(--navsel-tile-off) calc((1 - var(--sel)) * 100%),
+      var(--navsel-tile-on)
+    );
+    color: color-mix(in oklab, var(--navsel-ink-off) calc((1 - var(--sel)) * 100%), var(--navsel-ink-on));
+    box-shadow: 0 0 calc(var(--sel) * var(--open) * 22px)
+      rgb(242 184 75 / calc(var(--sel) * var(--open) * 0.4));
+    /* Tiles pass over body copy on their way along the row. */
+    backdrop-filter: blur(3px);
+  }
+
+  .navsel__card::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgb(16 23 32 / 0.35);
+    opacity: var(--sel);
+    pointer-events: none;
+  }
+
+  .navsel__icon {
+    width: 60%;
+    height: 60%;
+    fill: currentColor;
+    shape-rendering: crispEdges;
+  }
+
+  .navsel__num {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    font-size: 0.625rem;
+    line-height: 1;
+    opacity: 0.55;
+  }
+
+  /* Sits in the crook of the L, the one region the two arms leave empty. */
+  .navsel__readout {
+    position: absolute;
+    right: var(--navsel-step);
+    bottom: calc(var(--navsel-step) + 0.6rem);
+    width: 15rem;
+    display: grid;
+    gap: 0.15rem;
+    text-align: right;
+    opacity: var(--open);
+    transform: translateX(calc((1 - var(--open)) * 10px));
+    pointer-events: none;
+  }
+
+  .navsel__readout p {
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  .navsel__eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .navsel__label {
+    font-size: 1.25rem;
+    color: var(--accent-strong);
+  }
+
+  .navsel__path {
+    font-size: 0.875rem;
+    color: var(--accent);
+    opacity: 0.75;
+  }
+
+  .navsel__caption {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-wrap: balance;
+  }
+
+  .navsel__hint {
+    position: absolute;
+    right: 0;
+    top: 0.6rem;
+    margin: 0;
+    height: 1em;
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .navsel__hint-line {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .navsel__hint-line--closed {
+    opacity: calc(1 - var(--open));
+  }
+
+  .navsel__hint-line--open {
+    opacity: var(--open);
+    color: var(--accent);
+  }
+
+  .navsel__hint kbd {
+    display: inline-block;
+    padding: 0.05rem 0.3rem;
+    border: 1px solid var(--border);
+    background: var(--bg-strong);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .navsel__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Below this the L has nowhere to unfold into, and the header nav is the
+     better affordance anyway. */
+  @media (max-width: 60rem) {
+    .navsel {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  let teardown: (() => void) | null = null;
+  let booting = false;
+
+  function boot() {
+    const root = document.querySelector<HTMLElement>("[data-nav-selector]");
+    if (!root || booting || teardown) return;
+    booting = true;
+
+    import("../scripts/navSelector")
+      .then(({ initNavSelector }) => {
+        booting = false;
+        // The chunk can still be in flight when a client-side navigation
+        // replaces the document, leaving this root detached.
+        if (!root.isConnected) return;
+        teardown = initNavSelector(root);
+      })
+      .catch(() => {
+        booting = false;
+      });
+  }
+
+  function dispose() {
+    teardown?.();
+    teardown = null;
+    booting = false;
+  }
+
+  // Window-level key/wheel listeners outlive a client-side swap, and the
+  // selector's idea of "the page you are on" is captured at init, so it is
+  // rebuilt from scratch on every navigation rather than persisted.
+  document.addEventListener("astro:before-swap", dispose);
+  document.addEventListener("astro:page-load", boot);
+
+  boot();
+</script>

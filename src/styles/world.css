@@ -126,9 +126,11 @@ html[data-world-reading-mode="true"] .world-canvas {
   white-space: pre;
 }
 
+/* Sits alongside the debug readout on the bottom left rather than the bottom
+   right, which belongs to the page selector's L. */
 .world-debug-weather {
   position: fixed;
-  right: 0.75rem;
+  left: 13rem;
   bottom: 0.75rem;
   z-index: 41;
   display: grid;

@@ -75,6 +75,14 @@ const ENTRY_KEY = "doorEntry";
 
 type DoorReturn = { from: string; to: string };
 
+/**
+ * The page selector (src/scripts/navSelector.ts) takes over wheel input while
+ * it is open, and the door's pull-up gesture reads the same wheel-up. Without
+ * this, scrolling the selector at the top of an archive page you arrived at
+ * through a door would cycle the selector and fire the door return at once.
+ */
+const pageSelectorOpen = () => document.documentElement.dataset.pageSelector === "open";
+
 const samePath = (a: string, b: string) =>
   a.replace(/\/+$/, "").toLowerCase() === b.replace(/\/+$/, "").toLowerCase();
 
@@ -154,7 +162,7 @@ export function initDoorReturn(): (() => void) | undefined {
   }
 
   function onWheel(e: WheelEvent) {
-    if (triggered) return;
+    if (triggered || pageSelectorOpen()) return;
     if (window.scrollY > 0) {
       pull = 0;
       return;
@@ -172,7 +180,7 @@ export function initDoorReturn(): (() => void) | undefined {
   }
 
   function onTouchMove(e: TouchEvent) {
-    if (triggered || touchStartY === null) return;
+    if (triggered || touchStartY === null || pageSelectorOpen()) return;
     if (window.scrollY > 0) {
       pull = 0;
       return;

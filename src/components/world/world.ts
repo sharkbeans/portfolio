@@ -57,6 +57,13 @@ function axesTowardPoint(fromX: number, fromY: number, toX: number, toY: number)
   return { horizontal, vertical };
 }
 
+// The page selector (src/components/NavSelector.astro) lives outside the
+// world and publishes its state on <html>, so the world can yield input to it
+// without either side importing the other.
+function isNavSelectorOpen() {
+  return document.documentElement.dataset.pageSelector === "open";
+}
+
 function isDebugEnabled() {
   try {
     return new URLSearchParams(window.location.search).has("debugWorld") || import.meta.env.DEV;
@@ -164,7 +171,7 @@ export function initWorld(root: HTMLElement) {
   }
 
   const inputController = new InputController({
-    isPaused: () => dialogOpen || readingMode || !manualMode,
+    isPaused: () => dialogOpen || readingMode || !manualMode || isNavSelectorOpen(),
     isDialogOpen: () => dialogOpen,
     onInteract() {
       const nearest = interactionSystem.findNearest(
@@ -306,6 +313,7 @@ export function initWorld(root: HTMLElement) {
 
       if (manualMode && !readingMode) {
         const crouching = inputController.isCrouching();
+        const navSelectorOpen = isNavSelectorOpen();
 
         const newPing = inputController.consumePing();
         if (newPing) {
@@ -325,7 +333,14 @@ export function initWorld(root: HTMLElement) {
           const keyboardAxes = inputController.getAxes();
           let axes = keyboardAxes;
 
-          if (keyboardAxes.horizontal !== 0 || keyboardAxes.vertical !== 0) {
+          if (navSelectorOpen) {
+            // The selector owns the keyboard while it is open. Feeding the
+            // player zeroed axes rather than skipping the tick keeps it from
+            // coasting on whatever key was held when the menu opened, and
+            // clears `isMoving` so the sprite stops walking on the spot.
+            inputController.clearMoveTarget();
+            axes = { horizontal: 0, vertical: 0 };
+          } else if (keyboardAxes.horizontal !== 0 || keyboardAxes.vertical !== 0) {
             // Keyboard always wins: pressing WASD hands control back and
             // drops whatever click-to-move destination was pending.
             inputController.clearMoveTarget();
@@ -365,9 +380,10 @@ export function initWorld(root: HTMLElement) {
         }
         footEffects.tick(dt);
 
-        currentNearest = dialogOpen
-          ? undefined
-          : interactionSystem.findNearest(player.x, player.y, collisionSystem.getInteractableRects());
+        currentNearest =
+          dialogOpen || navSelectorOpen
+            ? undefined
+            : interactionSystem.findNearest(player.x, player.y, collisionSystem.getInteractableRects());
         interactionSystem.updateHighlight(currentNearest);
 
         // Firing snaps the sprite to face the cursor (left/right only — the
