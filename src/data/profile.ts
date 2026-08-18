@@ -11,7 +11,7 @@ export const profile = {
   aboutIntro:
     "I like building small web systems that stay understandable, useful, and a little bit playful.",
   github: "https://github.com/sharkbeans",
-  sourceRepository: "https://github.com/sharkbeans/portfolio",
+  sourceRepository: "https://github.com/sharkbeans/sharkbeans.github.io",
 } as const;
 
 export type Profile = typeof profile;

@@ -72,19 +72,18 @@ To enable deployment:
 
 ### Base-path handling
 
-The site is configured with `base: "/portfolio/"` in [astro.config.ts](astro.config.ts) to match the current GitHub Pages project URL. Every internal link, asset path, and the sprite sheet URL is built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths. See `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples. If you move to a custom domain at the root, change `base` to `"/"` and update `site` in `src/data/profile.ts`.
+The site is configured with `base: "/"` in [astro.config.ts](astro.config.ts), matching the GitHub Pages user-site URL `https://sharkbeans.github.io`. Every internal link, asset path, and the sprite sheet URL is still built from `import.meta.env.BASE_URL` rather than hardcoded root-relative paths, so the site stays portable if it ever moves back under a subpath. See `src/data/world.ts`, `src/components/world/world.ts`, and `Footer.astro` for examples.
 
 ## Custom-domain setup
 
-The site currently lives at `https://sharkbeans.github.io/portfolio/`, a repository subpath, with no custom domain configured. To move to a root custom domain later:
+The site lives at `https://sharkbeans.github.io`, the root of the GitHub Pages user site, with no custom domain configured. That URL requires the repository to be named exactly `sharkbeans.github.io`; renaming it to anything else would push the site back to a `/repo-name/` subpath and `base` would have to change with it. To move to a custom domain later:
 
 1. Replace `site` in [src/data/profile.ts](src/data/profile.ts) with the real domain, and update `siteLabel` to match.
-2. Change `base: "/portfolio/"` to `base: "/"` in `astro.config.ts`.
-3. Add a `CNAME` file in `public/` containing only the final domain.
-4. Configure your DNS records to point at GitHub Pages.
-5. Rebuild and redeploy.
+2. Add a `CNAME` file in `public/` containing only the final domain.
+3. Configure your DNS records to point at GitHub Pages.
+4. Rebuild and redeploy.
 
-Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those five steps are the whole change, but skipping any of them leaves them pointing at the wrong host.
+`base` already stays `"/"` in that case. Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those four steps are the whole change, but skipping any of them leaves them pointing at the wrong host.
 
 ## Project structure
 
