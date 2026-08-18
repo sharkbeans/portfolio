@@ -1,0 +1,362 @@
+---
+import {
+  Alert,
+  BarGraph,
+  Badge,
+  Button,
+  Divider,
+  KeyboardKey,
+  List,
+  Loading,
+  Progress,
+  SpiderGraph,
+  Stat,
+  Stepper,
+  SubCard,
+  Table,
+  Text,
+} from "snake-eater-ui";
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { githubStats, isLiveGithubData } from "../data/github";
+import "../styles/snake-kit.css";
+
+/*
+ * Every snake-eater-ui component below is rendered without a client:* directive,
+ * so Astro compiles them to static HTML at build time and no React runtime is
+ * sent to the browser. That rules out the genuinely interactive components
+ * (Modal, Drawer, Tabs, PinInput, the form controls) — unhydrated they would
+ * render in their default state and never respond — so this page deliberately
+ * shows the presentational half of the library, driven by real data from the
+ * same GitHub pull that /stats uses.
+ */
+
+const { contributions, languages, commitClock, profile, repos } = githubStats;
+
+/** Language mix as a radar: top 6 by bytes, scaled so the largest reads 100. */
+const topLanguages = languages.slice(0, 6);
+const largestLanguage = topLanguages[0]?.size ?? 1;
+const languageRadar = topLanguages.map((language) => ({
+  label: language.name,
+  value: Math.round((language.size / largestLanguage) * 100),
+}));
+
+/** Commit clock folded into 3-hour blocks — 24 bars is unreadable at this width. */
+const commitBlocks = commitClock
+  ? Array.from({ length: 8 }, (_, block) => ({
+      label: `${String(block * 3).padStart(2, "0")}h`,
+      value: commitClock.hours
+        .slice(block * 3, block * 3 + 3)
+        .reduce((sum, count) => sum + count, 0),
+    }))
+  : [];
+
+const tableRepos = repos
+  .filter((repo) => !repo.isArchived && !repo.isPrivate)
+  .sort((a, b) => b.stars - a.stars || +new Date(b.pushedAt) - +new Date(a.pushedAt))
+  .slice(0, 5)
+  .map((repo) => ({
+    name: repo.name,
+    language: repo.language ?? "—",
+    stars: repo.stars,
+    pushed: new Date(repo.pushedAt).toISOString().slice(0, 10),
+  }));
+
+/**
+ * The controls the KAPLAY world layer actually binds, not a generic sample.
+ * Kept in step with the hint bar in src/components/world/WorldCanvas.astro.
+ */
+const controls = [
+  { keys: ["W", "A", "S", "D"], note: "move the sprite (arrow keys work too)" },
+  { keys: ["Shift"], note: "run" },
+  { keys: ["E"], note: "interact with whatever you are standing on" },
+  { keys: ["Q"], note: "hold for the page selector, scroll to pick a page" },
+  { keys: ["Esc"], note: "close an open project preview" },
+];
+
+const buildSteps = [
+  { label: "fetch", description: "GitHub API pull in CI" },
+  { label: "vendor", description: "strip the library reset" },
+  { label: "build", description: "static render, no React shipped" },
+  { label: "deploy", description: "Pages" },
+];
+---
+
+<BaseLayout
+  title="lab | sharkbeans"
+  description="A playground for snake-eater-ui, a Metal Gear-flavoured React component kit, rethemed onto this site's palette and rendered without shipping any React."
+>
+  <div class="stack">
+    <header class="page-header">
+      <p class="eyebrow">lab</p>
+      <h1>Component lab</h1>
+      <p class="lede">
+        A working playground for <a href="https://github.com/asynchronous-x/snake-eater-ui"
+          >snake-eater-ui</a
+        >, a component kit whose sharp corners and thin borders land somewhere near the MGS1 codec
+        screen. It is a React library; this site is not a React site. Everything below is rendered
+        to static HTML at build time, so the page ships the same amount of framework JavaScript as
+        every other page here, which is none.
+      </p>
+    </header>
+
+    <section class="stack" aria-labelledby="notes-heading">
+      <h2 id="notes-heading" class="section-title">What it took</h2>
+      <div class="snake-kit lab-grid lab-grid--wide">
+        <SubCard header="Retheme" variant="info">
+          The kit ships monochrome grey on near-black. Its tokens are re-declared on a
+          <code>.snake-kit</code> wrapper and remapped to this site's amber-on-navy. That only gets
+          part of the way: around 450 colour literals never go through those tokens at all, so the
+          build script rewrites those too — including the React-brand cyan the kit uses as its accent.
+        </SubCard>
+        <SubCard header="Scoping" variant="warning">
+          About 9KB of its stylesheet is an unscoped reset — bare <code>html</code>,
+          <code>body</code>, <code>p</code>, <code>a</code>, and an unprefixed <code>.card</code> —
+          which would flatten the rest of the site. A build script strips those rules and keeps the
+          1,839 that are safely prefixed.
+        </SubCard>
+        <SubCard header="Types" variant="danger">
+          The published package points TypeScript at declaration files it does not actually include,
+          so every import fails <code>astro check</code>. The props used here are transcribed from
+          upstream source into a local declaration instead.
+        </SubCard>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="stack" aria-labelledby="signal-heading">
+      <h2 id="signal-heading" class="section-title">Signal</h2>
+      <p>
+        Alerts, badges, and progress. The status colours are the library's originals — there is no
+        equivalent in this site's palette, and they read well enough as codec status lights.
+      </p>
+
+      <div class="snake-kit stack">
+        <Alert
+          variant="info"
+          title="Frequency 140.85"
+          description="Static render. This alert has a dismiss button in the library; without hydration it is decorative here."
+        />
+        <Alert variant="success" title="Build clean" description="astro check and tsc both pass." />
+        <Alert
+          variant="warning"
+          title="Pre-1.0"
+          description="Pinned to 0.0.13. The API is not stable yet, which is most of the reason this lives on one page instead of the whole site."
+        />
+
+        <div class="lab-row">
+          <Badge variant="success">live</Badge>
+          <Badge variant="info" style="outline">static</Badge>
+          <Badge variant="warning" style="dot">0.0.13</Badge>
+          <Badge variant="ghost">no react shipped</Badge>
+        </div>
+
+        <div class="lab-row">
+          <Button variant="cyber">cyber</Button>
+          <Button variant="clipped">clipped</Button>
+          <Button variant="secondary">secondary</Button>
+          <Button variant="ghost">ghost</Button>
+        </div>
+
+        <Progress value={100} variant="cyber" type="segmented" segments={12} label="hydration budget spent" showLabel labelPosition="top" />
+        <Loading type="bars" text="awaiting transmission" />
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="stack" aria-labelledby="readout-heading">
+      <h2 id="readout-heading" class="section-title">Readout</h2>
+      <p>
+        Real numbers, from the same build-time GitHub pull that feeds <a href={`${import.meta.env.BASE_URL}stats`}>stats</a>.
+        {isLiveGithubData ? null : " Currently showing the committed fallback snapshot."}
+      </p>
+
+      <div class="snake-kit lab-grid">
+        <Stat label="contributions" value={contributions.total} info="last 12 months" color="success" />
+        <Stat label="commits" value={contributions.commits} info="of that total" />
+        <Stat label="public repos" value={profile.publicRepos} info={`plus ${profile.privateRepoCount} private`} />
+        <Stat
+          label="commits sampled"
+          value={commitClock?.sampled ?? 0}
+          info={`across ${commitClock?.reposScanned ?? 0} repos`}
+          color="info"
+        />
+      </div>
+    </section>
+
+    <section class="stack" aria-labelledby="graphs-heading">
+      <h2 id="graphs-heading" class="section-title">Graphs</h2>
+      <p>
+        These are plain SVG with no measurement pass, which is why they survive static rendering
+        intact. The charts on <a href={`${import.meta.env.BASE_URL}stats`}>stats</a> stay on
+        Chart.js — they need the hover tooltips that only come with hydration.
+      </p>
+
+      <div class="snake-kit lab-graphs">
+        <figure class="lab-figure lab-figure--radar">
+          <SpiderGraph data={languageRadar} variant="cyber" height={300} showValues levels={4} />
+          <figcaption>Language mix by bytes, scaled against the largest.</figcaption>
+        </figure>
+
+        <figure class="lab-figure">
+          <BarGraph
+            data={commitBlocks}
+            height={300}
+            showValues
+            showGrid
+            variant="detailed"
+            barColor="var(--accent)"
+            gridColor="var(--border)"
+          />
+          <figcaption>Commits by three-hour block, GMT+8.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="stack" aria-labelledby="controls-heading">
+      <h2 id="controls-heading" class="section-title">Controls</h2>
+      <p>The keys the world layer on this site actually binds.</p>
+
+      <div class="snake-kit">
+        <ul class="lab-controls">
+          {
+            controls.map((control) => (
+              <li>
+                <span class="lab-controls__keys">
+                  {control.keys.map((key) => (
+                    <KeyboardKey size="small" variant={key === "Esc" || key === "Shift" ? "modifier" : "default"}>
+                      {key}
+                    </KeyboardKey>
+                  ))}
+                </span>
+                <Text size="sm" variant="secondary">
+                  {control.note}
+                </Text>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="stack" aria-labelledby="pipeline-heading">
+      <h2 id="pipeline-heading" class="section-title">Pipeline</h2>
+      <div class="snake-kit stack">
+        <Stepper steps={buildSteps} activeStep={buildSteps.length - 1} showNumbers />
+
+        <Table
+          data={tableRepos}
+          columns={[
+            { key: "name", header: "repo" },
+            { key: "language", header: "language" },
+            { key: "stars", header: "stars", align: "right" },
+            { key: "pushed", header: "pushed", align: "right" },
+          ]}
+          variant="striped"
+          size="small"
+          emptyMessage="No public repositories."
+        />
+
+        <List
+          type="unordered"
+          size="small"
+          items={[
+            { content: "Tokens scoped to .snake-kit, never :root" },
+            { content: "Reset rules stripped by scripts/vendor-snake-kit.mjs" },
+            { content: "~450 hardcoded colour literals remapped to site tokens" },
+            { content: "Bundled fonts dropped for the site's own stacks" },
+          ]}
+        />
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* The kit's own components handle their internals; these rules only lay the
+     samples out on the page and never reach inside a .snake-* element. */
+  .lab-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+
+  .lab-grid--wide {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  .lab-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .lab-graphs {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  .lab-figure {
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* SpiderGraph sets overflow:visible and paints its axis labels outside the
+     300x300 viewBox, so the spill needs somewhere to land. */
+  .lab-figure--radar {
+    padding: 1.5rem 4.5rem;
+  }
+
+  /* Language names are long enough to reach the neighbouring column at the
+     kit's default 10px, even with the padding above. */
+  .lab-figure--radar :global(.snake-spider-graph__label) {
+    font-size: 9px;
+  }
+
+  .lab-figure figcaption,
+  .lab-caption {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .lab-controls {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lab-controls li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .lab-controls__keys {
+    display: inline-flex;
+    gap: 0.25rem;
+    flex: 0 0 auto;
+    min-width: 9rem;
+  }
+
+  /* Sample copy inside the SubCards uses the site's inline code treatment; the
+     kit's own `code` styling was part of the reset that got stripped. */
+  .snake-kit code {
+    padding: 0.05rem 0.3rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+</style>
