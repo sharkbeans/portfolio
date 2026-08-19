@@ -6,13 +6,14 @@ import { featuredProjects } from "../data/projects";
 import { profile } from "../data/profile";
 import { socials } from "../data/socials";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { stripHtml } from "../utils/text";
 
 const base = import.meta.env.BASE_URL;
 const objektTools = featuredProjects.find((project) => project.slug === "objekt-tools");
 const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
 ---
 
-<BaseLayout title={profile.siteLabel} description={profile.homeBlurb}>
+<BaseLayout title={profile.siteLabel} description={stripHtml(profile.homeBlurb)}>
   <WorldCanvas />
 
   <div id="world-content" class="world-stage">
@@ -20,9 +21,9 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
       <section class="world-block" id="home-intro">
         <p class="eyebrow" data-world-solid>home</p>
         <h1 data-world-solid>{profile.handle.toUpperCase()}</h1>
-        <p class="lede" data-world-solid>{profile.introHeading}</p>
-        <p data-world-solid>{profile.intro}</p>
-        <p data-world-solid>{profile.homeBlurb}</p>
+        <p class="lede" data-world-solid set:html={profile.introHeading} />
+        <p data-world-solid set:html={profile.intro} />
+        <p data-world-solid set:html={profile.homeBlurb} />
         <p class="inline-links" data-world-solid>
           <a href="#selected-projects">selected projects</a>
           <a href="#github-activity">github activity</a>
@@ -39,7 +40,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
           <h2 class="section-title">objekt.my</h2>
           {objektTools ? (
             <>
-              <p>{objektTools.description}</p>
+              <p set:html={objektTools.description} />
               <p class="meta-line">
                 <span>{objektTools.technologies.join(" / ")}</span>
               </p>
@@ -64,7 +65,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
           <h2 class="section-title">MyBeli</h2>
           {mybeli ? (
             <>
-              <p>{mybeli.description}</p>
+              <p set:html={mybeli.description} />
               <p class="meta-line">
                 <span>{mybeli.technologies.join(" / ")}</span>
                 <span> · source is private</span>

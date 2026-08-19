@@ -5,6 +5,7 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import NavSelector from "../components/NavSelector.astro";
 import { profile } from "../data/profile";
+import { stripHtml } from "../utils/text";
 
 interface Props {
   title?: string;
@@ -15,7 +16,7 @@ interface Props {
 
 const {
   title = profile.siteLabel,
-  description = profile.homeBlurb,
+  description = stripHtml(profile.homeBlurb),
   ogImage = `${import.meta.env.BASE_URL}social-card.svg`,
   noIndex = false,
 } = Astro.props;

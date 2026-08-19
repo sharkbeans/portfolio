@@ -17,7 +17,7 @@ const base = import.meta.env.BASE_URL;
           <a href={`${base}projects/${project.slug}/`}>{project.title}</a>
           {project.status ? <span class="meta-chip">{project.status}</span> : null}
         </div>
-        <p>{project.description}</p>
+        <p set:html={project.description} />
         <p class="meta-line">
           <span>{project.technologies.join(" / ")}</span>
           {project.liveUrl ? (

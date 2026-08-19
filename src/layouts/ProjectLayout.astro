@@ -4,6 +4,7 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import ProjectArchive from "../components/ProjectArchive.astro";
 import type { Project } from "../data/projects";
+import { stripHtml } from "../utils/text";
 
 interface Props {
   project: Project;
@@ -16,12 +17,12 @@ const { project } = Astro.props;
 const title = `${project.title} | projects | sharkbeans`;
 ---
 
-<BaseLayout title={title} description={project.description}>
+<BaseLayout title={title} description={stripHtml(project.description)}>
   <article class="prose-shell prose-shell--door">
     <header class="page-header">
       <p class="eyebrow">projects</p>
       <h1>{project.title}</h1>
-      <p class="lede">{project.description}</p>
+      <p class="lede" set:html={project.description} />
       <p class="meta-line">
         {project.status ? <span>{project.status}</span> : null}
         <span> · </span>
