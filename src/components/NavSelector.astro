@@ -45,8 +45,16 @@ const cards = navWheelEntries.map((entry, index) => ({
   </div>
 
   <p class="navsel__hint" aria-hidden="true">
-    <span class="navsel__hint-line navsel__hint-line--closed">hold <kbd>Q</kbd></span>
-    <span class="navsel__hint-line navsel__hint-line--open">scroll &middot; release to go</span>
+    <span class="navsel__hint-line navsel__hint-line--closed navsel__hint-line--fine">
+      hold <kbd>Q</kbd>
+    </span>
+    <span class="navsel__hint-line navsel__hint-line--closed navsel__hint-line--coarse">tap</span>
+    <span class="navsel__hint-line navsel__hint-line--open navsel__hint-line--fine">
+      scroll &middot; release to go
+    </span>
+    <span class="navsel__hint-line navsel__hint-line--open navsel__hint-line--coarse">
+      drag &middot; release to go
+    </span>
   </p>
 
   <p class="navsel__status" role="status" aria-live="polite" data-nav-status></p>
@@ -179,6 +187,9 @@ const cards = navWheelEntries.map((entry, index) => ({
       rgb(242 184 75 / calc(var(--sel) * var(--open) * 0.4));
     /* Tiles pass over body copy on their way along the row. */
     backdrop-filter: blur(3px);
+    /* The tiles are the only pointer targets on the L, so they are where a
+       drag along it starts. The page must not scroll out from under it. */
+    touch-action: none;
   }
 
   .navsel__card::after {
@@ -274,6 +285,21 @@ const cards = navWheelEntries.map((entry, index) => ({
   .navsel__hint-line--open {
     opacity: var(--open);
     color: var(--accent);
+  }
+
+  /* Touch gets its own wording: there is no Q to hold and nothing to scroll. */
+  .navsel__hint-line--coarse {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .navsel__hint-line--fine {
+      display: none;
+    }
+
+    .navsel__hint-line--coarse {
+      display: block;
+    }
   }
 
   .navsel__hint kbd {

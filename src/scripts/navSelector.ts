@@ -23,6 +23,16 @@ const OPEN_SMOOTHING = 30;
  */
 const WHEEL_NOTCH = 60;
 
+/**
+ * Drag distance that advances one entry. Equal to STEP so the conveyor tracks
+ * the finger one to one: drag by the gap between two tiles and the list moves
+ * by exactly one tile.
+ */
+const DRAG_NOTCH = STEP;
+
+/** Travel before a touch counts as a spin rather than a tap. */
+const DRAG_THRESHOLD = 6;
+
 const SETTLED = 0.0005;
 
 type Card = {
@@ -110,6 +120,18 @@ export function initNavSelector(root: HTMLElement): () => void {
   let frame = 0;
   let lastTime = 0;
   let committed = false;
+
+  /** The pointer currently spinning the wheel, or null when nothing is dragging. */
+  let dragPointer: number | null = null;
+  let dragOriginX = 0;
+  let dragOriginY = 0;
+  /** Travel already turned into steps, measured from the drag origin. */
+  let dragConsumed = 0;
+  let dragMoved = false;
+  /** True when this gesture is what opened the selector, so a tap can stop there. */
+  let dragOpened = false;
+  /** Set when a gesture has already decided what the interaction meant. */
+  let swallowClick = false;
 
   const cards: Card[] = cardEls.map((el, index) => {
     const target = signedOffset(index, cursor, count);
@@ -335,6 +357,105 @@ export function initNavSelector(root: HTMLElement): () => void {
     cancel();
   }
 
+  /**
+   * Touch has no wheel, so a drag along the L drives the same conveyor. Both
+   * axes are summed into one number rather than picked between, so a drag up
+   * the column, along the row, or diagonally across the crook all work without
+   * the gesture having to guess which arm you meant.
+   *
+   * The sign is deliberately the opposite of the wheel's: a wheel scrolled up
+   * pushes the tiles down, the way a wheel moves a document, while a finger
+   * drags the tiles with it. Both end up feeling like the same conveyor.
+   */
+  function onDragStart(event: PointerEvent) {
+    // Any fresh press starts from a clean slate, so a gesture that ended
+    // somewhere no click could follow cannot leave the flag set for the next
+    // one — including the mouse's, which is why this runs before the guard.
+    swallowClick = false;
+
+    // A mouse keeps its click-to-open, wheel-to-spin contract.
+    if (event.pointerType === "mouse" || dragPointer !== null) return;
+
+    dragPointer = event.pointerId;
+    dragOriginX = event.clientX;
+    dragOriginY = event.clientY;
+    dragConsumed = 0;
+    dragMoved = false;
+    dragOpened = !open;
+
+    // Captured to the root rather than the tile the finger landed on, which
+    // stops being a pointer target as soon as the list slides it out of the
+    // window.
+    root.setPointerCapture(event.pointerId);
+    window.addEventListener("pointermove", onDragMove);
+    window.addEventListener("pointerup", onDragEnd);
+    window.addEventListener("pointercancel", onDragCancel);
+
+    if (!open) openSelector(false);
+  }
+
+  function onDragMove(event: PointerEvent) {
+    if (event.pointerId !== dragPointer) return;
+
+    const dx = event.clientX - dragOriginX;
+    const dy = event.clientY - dragOriginY;
+
+    if (!dragMoved) {
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+      dragMoved = true;
+      // Re-anchor so the first step is a full notch from where the gesture was
+      // recognised, not from where the finger first landed.
+      dragOriginX = event.clientX;
+      dragOriginY = event.clientY;
+      return;
+    }
+
+    // Down and left both run the list forward, matching the direction the
+    // tiles themselves travel for step(1).
+    const advance = dy - dx;
+
+    while (advance - dragConsumed >= DRAG_NOTCH) {
+      dragConsumed += DRAG_NOTCH;
+      step(1);
+    }
+    while (advance - dragConsumed <= -DRAG_NOTCH) {
+      dragConsumed -= DRAG_NOTCH;
+      step(-1);
+    }
+  }
+
+  function endDrag() {
+    if (dragPointer === null) return;
+    window.removeEventListener("pointermove", onDragMove);
+    window.removeEventListener("pointerup", onDragEnd);
+    window.removeEventListener("pointercancel", onDragCancel);
+    if (root.hasPointerCapture(dragPointer)) root.releasePointerCapture(dragPointer);
+    dragPointer = null;
+  }
+
+  function onDragEnd(event: PointerEvent) {
+    if (event.pointerId !== dragPointer) return;
+    const spun = dragMoved;
+    const opened = dragOpened;
+    endDrag();
+
+    // A drag commits whatever it spun into the elbow, the way releasing Q
+    // does. A tap that only unfolded the selector leaves it open to pick from.
+    // Either way the click that follows must not count as a second choice.
+    if (spun) {
+      swallowClick = true;
+      commit();
+    } else if (opened) {
+      swallowClick = true;
+    }
+  }
+
+  function onDragCancel(event: PointerEvent) {
+    if (event.pointerId !== dragPointer) return;
+    swallowClick = dragMoved || dragOpened;
+    endDrag();
+  }
+
   // A key release that never arrives (alt-tab mid-hold) should not strand the
   // selector open, and must not navigate on its own either.
   const onBlur = () => cancel();
@@ -342,6 +463,11 @@ export function initNavSelector(root: HTMLElement): () => void {
   const cardHandlers = cardEls.map((el, index) => {
     const handler = (event: MouseEvent) => {
       event.preventDefault();
+      // The gesture that produced this click has already acted on it.
+      if (swallowClick) {
+        swallowClick = false;
+        return;
+      }
       if (!open) {
         openSelector(false);
         return;
@@ -355,6 +481,7 @@ export function initNavSelector(root: HTMLElement): () => void {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("blur", onBlur);
+  root.addEventListener("pointerdown", onDragStart);
 
   document.documentElement.dataset.pageSelector = "closed";
   setReadout(cursor);
@@ -367,6 +494,8 @@ export function initNavSelector(root: HTMLElement): () => void {
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("pointerdown", onPointerDown);
     window.removeEventListener("blur", onBlur);
+    root.removeEventListener("pointerdown", onDragStart);
+    endDrag();
     cardEls.forEach((el, index) => el.removeEventListener("click", cardHandlers[index]));
     if (frame) cancelAnimationFrame(frame);
     delete document.documentElement.dataset.pageSelector;
