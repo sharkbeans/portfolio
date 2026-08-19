@@ -1,4 +1,4 @@
-import { profile } from "./profile";
+import socialsData from "./socials.json";
 
 export type SocialLink = {
   label: string;
@@ -6,17 +6,4 @@ export type SocialLink = {
   note?: string;
 };
 
-export const socials: SocialLink[] = [
-  {
-    label: "GitHub",
-    href: profile.github,
-  },
-  // {
-  //   label: "LinkedIn",
-  //   note: "[ADD PUBLIC PROFILE URL]",
-  // },
-  // {
-  //   label: "Other profile",
-  //   note: "[ADD PUBLIC PROFILE URL]",
-  // },
-];
+export const socials: SocialLink[] = socialsData as SocialLink[];

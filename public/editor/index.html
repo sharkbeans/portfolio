@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Site Editor</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --panel: #f5f5f5;
+    --border: #ddd;
+    --text: #1a1a1a;
+    --muted: #666;
+    --accent: #2563eb;
+    --danger: #b91c1c;
+    --mono: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --panel: #242424;
+      --border: #3a3a3a;
+      --text: #eee;
+      --muted: #999;
+      --accent: #60a5fa;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 1rem; margin: 0; font-weight: 600; flex-shrink: 0; }
+  header .repo { color: var(--muted); font-size: 0.8rem; font-family: var(--mono); flex-shrink: 0; }
+  header .spacer { flex: 1; }
+  nav.tabs { display: flex; gap: 0.25rem; }
+  nav.tabs button {
+    background: transparent;
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+  }
+  nav.tabs button.active {
+    background: var(--panel);
+    border-color: var(--border);
+    font-weight: 600;
+  }
+  button {
+    font: inherit;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.danger { color: var(--danger); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #auth {
+    max-width: 480px;
+    margin: 3rem auto;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  #auth p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  #auth ol {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    padding-left: 1.2rem;
+    margin: 0.75rem 0;
+  }
+  #auth ol li { margin-bottom: 0.4rem; }
+  #auth code {
+    background: var(--panel);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  #warning {
+    display: flex;
+    gap: 0.6rem;
+    background: color-mix(in srgb, var(--danger) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  #warning strong { color: var(--danger); }
+  #auth input {
+    width: 100%;
+    padding: 0.5rem;
+    font: inherit;
+    font-family: var(--mono);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0.5rem 0;
+  }
+  #app { display: none; }
+  #app.active { display: flex; height: calc(100vh - 53px); }
+  #list {
+    width: 280px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  #list .item {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  #list .item:hover { background: var(--panel); }
+  #list .item.selected { background: var(--panel); border-left: 3px solid var(--accent); }
+  #list .item .title { font-weight: 500; margin-bottom: 0.2rem; }
+  #list .item .file { color: var(--muted); font-family: var(--mono); font-size: 0.75rem; }
+  #list .item .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    background: var(--border);
+    color: var(--muted);
+    margin-left: 0.3rem;
+  }
+  #detailWrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+    display: none;
+    max-width: 720px;
+  }
+  #detailWrap.active { display: block; }
+  #empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+  }
+  .field { margin-bottom: 0.9rem; }
+  .field label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .field input[type=text], .field input[type=date], .field textarea, .field select {
+    width: 100%;
+    padding: 0.5rem;
+    font: inherit;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--text);
+  }
+  .field textarea { min-height: 4.5rem; resize: vertical; }
+  .field textarea.large {
+    min-height: 50vh;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .field-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.4; }
+  .checkbox-field { display: flex; align-items: center; gap: 0.5rem; }
+  .checkbox-field input { width: auto; }
+  .checkbox-field label { margin: 0; text-transform: none; font-size: 0.9rem; }
+  #status { font-size: 0.8rem; color: var(--muted); }
+  #status.error { color: var(--danger); }
+  #status.ok { color: #16a34a; }
+  .actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
+  .entries-editor { border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; background: var(--panel); }
+  .entry-row { display: flex; gap: 0.4rem; margin-bottom: 0.4rem; }
+  .entry-row input {
+    flex: 1;
+    padding: 0.4rem;
+    font: inherit;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .entry-remove { padding: 0.2rem 0.5rem; flex-shrink: 0; color: var(--danger); }
+  .entry-add { margin-top: 0.2rem; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div id="auth">
+  <h1>Site Editor</h1>
+  <p>
+    Edits content directly in <code>sharkbeans/sharkbeans.github.io</code> via the GitHub API:
+    blog posts, standalone page write-ups (about, project case studies), the projects list, the
+    uses page, your profile blurbs, and social links.
+    You'll need a <strong>fine-grained personal access token</strong> scoped to only this
+    repository, with <strong>Contents: Read and write</strong> permission and nothing else.
+  </p>
+
+  <p style="margin-bottom: 0.3rem;"><strong>How to create one:</strong></p>
+  <ol>
+    <li>Go to <code>github.com</code> &rarr; click your avatar (top right) &rarr;
+      <strong>Settings</strong> &rarr; <strong>Developer settings</strong> (bottom of the left
+      sidebar).</li>
+    <li><strong>Personal access tokens</strong> &rarr; <strong>Fine-grained tokens</strong> &rarr;
+      <strong>Generate new token</strong>.</li>
+    <li>Give it a name (e.g. "site editor"), and set an <strong>expiration</strong> &mdash;
+      30&ndash;90 days is plenty, don't use "No expiration."</li>
+    <li>Under <strong>Repository access</strong>, choose <strong>Only select repositories</strong>
+      and pick <code>sharkbeans.github.io</code>. Do not grant access to any other repo.</li>
+    <li>Under <strong>Permissions</strong>, click <strong>Add permissions</strong>, type
+      <code>Contents</code> into the search box, and check it. It'll appear in the permissions
+      list below &mdash; set its dropdown to <strong>Read and write</strong>. Leave everything
+      else as "No access."</li>
+    <li>Click <strong>Generate token</strong> and copy it &mdash; GitHub only shows it once.
+      Paste it below.</li>
+  </ol>
+
+  <div id="warning">
+    <span>&#9888;&#65039;</span>
+    <span>
+      <strong>This token grants write access to your site's source repo.</strong>
+      It's stored unencrypted in this browser's local storage on this device and is sent only
+      to <code>api.github.com</code> &mdash; never paste it into any other site. Don't use this
+      on a shared or public computer. Click <strong>Disconnect</strong> when you're done editing
+      to remove it from local storage, and let the token expire/revoke it from GitHub's
+      settings if you no longer need it.
+    </span>
+  </div>
+
+  <input id="token" type="password" placeholder="github_pat_..." autocomplete="off" />
+  <button id="connect" class="primary">Connect</button>
+  <p id="authError" style="color: var(--danger);"></p>
+</div>
+
+<header id="topbar" style="display: none;">
+  <h1>Site Editor</h1>
+  <nav class="tabs">
+    <button data-tab="blog" class="active">Blog</button>
+    <button data-tab="pages">Pages</button>
+    <button data-tab="projects">Projects</button>
+    <button data-tab="uses">Uses</button>
+    <button data-tab="profile">Profile</button>
+    <button data-tab="socials">Socials</button>
+  </nav>
+  <span class="spacer"></span>
+  <span class="repo">main</span>
+  <button id="newItem">+ New</button>
+  <button id="disconnect" class="danger">Disconnect</button>
+</header>
+
+<div id="app">
+  <div id="list"></div>
+  <div id="empty">Select an item, or create a new one.</div>
+  <div id="detailWrap">
+    <div id="editor"></div>
+    <div class="actions">
+      <button id="save" class="primary">Save (commit to main)</button>
+      <button id="deleteItem" class="danger" style="display: none;">Delete</button>
+      <span id="status"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var OWNER = "sharkbeans";
+  var REPO = "sharkbeans.github.io";
+  var BRANCH = "main";
+  var API = "https://api.github.com";
+  var TOKEN_KEY = "blogEditorPAT";
+
+  var state = {
+    token: null,
+    tab: "blog",
+    dirty: false,
+    saveHandler: null,
+    deleteHandler: null,
+    newHandler: null,
+  };
+
+  var el = {};
+  [
+    "auth", "token", "connect", "authError",
+    "topbar", "app", "list", "empty", "detailWrap", "editor",
+    "newItem", "disconnect", "save", "deleteItem", "status",
+  ].forEach(function (id) { el[id] = document.getElementById(id); });
+
+  function apiHeaders() {
+    return {
+      "Authorization": "Bearer " + state.token,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+  }
+
+  function b64DecodeUnicode(str) {
+    var binary = atob(str.replace(/\n/g, ""));
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  function b64EncodeUnicode(str) {
+    var bytes = new TextEncoder().encode(str);
+    var binary = "";
+    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function setStatus(msg, kind) {
+    el.status.textContent = msg || "";
+    el.status.className = kind || "";
+  }
+
+  function markDirty() { state.dirty = true; }
+
+  function confirmDiscardIfDirty() {
+    if (!state.dirty) return true;
+    return confirm("Discard unsaved changes?");
+  }
+
+  function showDetail() {
+    el.empty.style.display = "none";
+    el.detailWrap.classList.add("active");
+  }
+
+  function hideDetail(message) {
+    el.detailWrap.classList.remove("active");
+    el.editor.innerHTML = "";
+    el.empty.style.display = "flex";
+    el.empty.textContent = message || "Select an item, or create a new one.";
+    state.saveHandler = null;
+    state.deleteHandler = null;
+    el.deleteItem.style.display = "none";
+  }
+
+  // ---- frontmatter parsing (blog posts only; tailored to the fixed schema) ----
+
+  function unquote(s) {
+    s = s.trim();
+    if (s.length >= 2) {
+      var first = s[0], last = s[s.length - 1];
+      if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+        return s.slice(1, -1).replace(/\\"/g, '"');
+      }
+    }
+    return s;
+  }
+
+  function quoteValue(s) {
+    s = s == null ? "" : String(s);
+    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+  }
+
+  function needsQuote(s) {
+    return /[:#\[\]{}&*!|>'"%@`,]/.test(s) || s.trim() !== s || s === "";
+  }
+
+  function parseFrontmatter(raw) {
+    var m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+    if (!m) return null;
+    var yaml = m[1], body = m[2];
+    var lines = yaml.split(/\r?\n/);
+    var fields = {};
+    var i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+      if (line.trim() === "") { i++; continue; }
+      var km = line.match(/^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/);
+      if (!km) { i++; continue; }
+      var key = km[1], rest = km[2];
+      if (rest === "") {
+        var list = [];
+        var j = i + 1;
+        while (j < lines.length && /^\s*-\s*/.test(lines[j])) {
+          list.push(unquote(lines[j].replace(/^\s*-\s*/, "")));
+          j++;
+        }
+        fields[key] = list;
+        i = j;
+      } else if (rest === "[]") {
+        fields[key] = [];
+        i++;
+      } else {
+        fields[key] = unquote(rest);
+        i++;
+      }
+    }
+    return { fields: fields, body: body };
+  }
+
+  function serializeFrontmatter(fields, body) {
+    var lines = [];
+    lines.push("title: " + quoteValue(fields.title));
+    lines.push("description: " + quoteValue(fields.description));
+    lines.push("pubDate: " + fields.pubDate);
+    if (fields.updatedDate) lines.push("updatedDate: " + fields.updatedDate);
+    var tags = fields.tags || [];
+    if (tags.length) {
+      lines.push("tags:");
+      tags.forEach(function (t) {
+        lines.push("  - " + (needsQuote(t) ? quoteValue(t) : t));
+      });
+    } else {
+      lines.push("tags: []");
+    }
+    lines.push("draft: " + (fields.draft ? "true" : "false"));
+    if (fields.heroImage) lines.push("heroImage: " + quoteValue(fields.heroImage));
+    if (fields.canonicalUrl) lines.push("canonicalUrl: " + quoteValue(fields.canonicalUrl));
+    var bodyTrimmed = body.replace(/^\n+/, "");
+    return "---\n" + lines.join("\n") + "\n---\n\n" + bodyTrimmed.replace(/\s+$/, "") + "\n";
+  }
+
+  // ---- API calls ----
+
+  function ghFetch(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({}, apiHeaders(), opts.headers || {});
+    return fetch(API + path, opts).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          throw new Error((body && body.message) || (res.status + " " + res.statusText));
+        });
+      }
+      return res.json();
+    });
+  }
+
+  function getFile(path) {
+    return ghFetch("/repos/" + OWNER + "/" + REPO + "/contents/" + path + "?ref=" + BRANCH);
+  }
+
+  function putFile(path, sha, content, message) {
+    var payload = { message: message, content: b64EncodeUnicode(content), branch: BRANCH };
+    if (sha) payload.sha = sha;
+    return ghFetch("/repos/" + OWNER + "/" + REPO + "/contents/" + path, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  function getJsonFile(path) {
+    return getFile(path).then(function (data) {
+      return { sha: data.sha, json: JSON.parse(b64DecodeUnicode(data.content)) };
+    });
+  }
+
+  function putJsonFile(path, sha, obj, message) {
+    return putFile(path, sha, JSON.stringify(obj, null, 2) + "\n", message);
+  }
+
+  // ---- generic field-descriptor form builder (used by every tab) ----
+  // field: { key, label, type: text|textarea|date|checkbox|select|list|lines|entries,
+  //          optional, large, options, note }
+
+  function buildForm(fields, item) {
+    el.editor.innerHTML = "";
+    var inputs = {};
+    fields.forEach(function (f) {
+      var wrap = document.createElement("div");
+      wrap.className = "field" + (f.type === "checkbox" ? " checkbox-field" : "");
+
+      if (f.type === "checkbox") {
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.id = "gf-" + f.key;
+        cb.checked = !!item[f.key];
+        cb.addEventListener("change", markDirty);
+        var cbLabel = document.createElement("label");
+        cbLabel.setAttribute("for", cb.id);
+        cbLabel.textContent = f.label;
+        wrap.appendChild(cb);
+        wrap.appendChild(cbLabel);
+        inputs[f.key] = cb;
+        el.editor.appendChild(wrap);
+        return;
+      }
+
+      var label = document.createElement("label");
+      label.textContent = f.label;
+      wrap.appendChild(label);
+
+      var input;
+      if (f.type === "entries") {
+        input = buildEntriesEditor(item[f.key] || []);
+      } else if (f.type === "textarea" || f.type === "lines") {
+        input = document.createElement("textarea");
+        if (f.large) input.className = "large";
+        input.value = f.type === "lines" ? (item[f.key] || []).join("\n") : (item[f.key] || "");
+        input.addEventListener("input", markDirty);
+      } else if (f.type === "select") {
+        input = document.createElement("select");
+        f.options.forEach(function (o) {
+          var opt = document.createElement("option");
+          opt.value = o;
+          opt.textContent = o;
+          input.appendChild(opt);
+        });
+        input.value = item[f.key] || f.options[0];
+        input.addEventListener("change", markDirty);
+      } else {
+        input = document.createElement("input");
+        input.type = f.type === "date" ? "date" : "text";
+        input.value = f.type === "list" ? (item[f.key] || []).join(", ") : (item[f.key] || "");
+        input.addEventListener("input", markDirty);
+      }
+      input.id = "gf-" + f.key;
+      wrap.appendChild(input);
+
+      if (f.note) {
+        var note = document.createElement("div");
+        note.className = "field-note";
+        note.textContent = f.note;
+        wrap.appendChild(note);
+      }
+
+      el.editor.appendChild(wrap);
+      inputs[f.key] = input;
+    });
+    return inputs;
+  }
+
+  function buildEntriesEditor(initialEntries) {
+    var container = document.createElement("div");
+    var entries = initialEntries.map(function (e) { return Object.assign({}, e); });
+
+    function render() {
+      container.innerHTML = "";
+      var box = document.createElement("div");
+      box.className = "entries-editor";
+      entries.forEach(function (entry, idx) {
+        var row = document.createElement("div");
+        row.className = "entry-row";
+        ["name", "detail", "href"].forEach(function (sub) {
+          var si = document.createElement("input");
+          si.type = "text";
+          si.placeholder = sub === "href" ? "href (optional)" : sub;
+          si.value = entry[sub] || "";
+          si.addEventListener("input", function () { entry[sub] = si.value; markDirty(); });
+          row.appendChild(si);
+        });
+        var rm = document.createElement("button");
+        rm.type = "button";
+        rm.textContent = "×";
+        rm.className = "entry-remove";
+        rm.addEventListener("click", function () { entries.splice(idx, 1); render(); markDirty(); });
+        row.appendChild(rm);
+        box.appendChild(row);
+      });
+      container.appendChild(box);
+      var addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.textContent = "+ Add entry";
+      addBtn.className = "entry-add";
+      addBtn.addEventListener("click", function () {
+        entries.push({ name: "", detail: "", href: "" });
+        render();
+        markDirty();
+      });
+      container.appendChild(addBtn);
+    }
+
+    render();
+    container._getValue = function () {
+      return entries
+        .filter(function (e) { return (e.name || "").trim() || (e.detail || "").trim(); })
+        .map(function (e) {
+          var out = { name: (e.name || "").trim(), detail: (e.detail || "").trim() };
+          if ((e.href || "").trim()) out.href = e.href.trim();
+          return out;
+        });
+    };
+    return container;
+  }
+
+  function readForm(fields, inputs) {
+    var out = {};
+    fields.forEach(function (f) {
+      var input = inputs[f.key];
+      if (f.type === "checkbox") {
+        out[f.key] = input.checked;
+      } else if (f.type === "list" || f.type === "lines") {
+        var sep = f.type === "list" ? "," : "\n";
+        var arr = input.value.split(sep).map(function (s) { return s.trim(); }).filter(Boolean);
+        if (arr.length || !f.optional) out[f.key] = arr;
+      } else if (f.type === "entries") {
+        out[f.key] = input._getValue();
+      } else {
+        var v = input.value.trim();
+        if (v || !f.optional) out[f.key] = v;
+      }
+    });
+    return out;
+  }
+
+  // ---- generic markdown-file-per-item tab (blog posts, standalone page write-ups) ----
+  // Files have YAML frontmatter (optional, may be empty) + a markdown body.
+
+  function makeMarkdownTab(cfg) {
+    // cfg: { contentDir, itemNoun, fields (incl. "body"), allowNew, newPrompt,
+    //        emptyFields(title), validate(values), emptyMessage }
+    var local = { files: [], currentPath: null };
+
+    function renderList() {
+      el.list.innerHTML = "";
+      local.files
+        .slice()
+        .sort(function (a, b) { return a.name.localeCompare(b.name); })
+        .forEach(function (f) {
+          var div = document.createElement("div");
+          div.className = "item" + (local.currentPath === f.path ? " selected" : "");
+          var disabled = /\.disabled$/.test(f.name);
+          var title = document.createElement("div");
+          title.className = "title";
+          title.textContent = f.name.replace(/\.mdx?(\.disabled)?$/, "");
+          if (disabled) {
+            var badge = document.createElement("span");
+            badge.className = "badge";
+            badge.textContent = "disabled";
+            title.appendChild(badge);
+          }
+          var file = document.createElement("div");
+          file.className = "file";
+          file.textContent = f.name;
+          div.appendChild(title);
+          div.appendChild(file);
+          div.addEventListener("click", function () { openFile(f); });
+          el.list.appendChild(div);
+        });
+    }
+
+    function openFile(f) {
+      if (!confirmDiscardIfDirty()) return;
+      setStatus("Loading...");
+      getFile(f.path)
+        .then(function (data) {
+          var raw = b64DecodeUnicode(data.content);
+          var parsed = parseFrontmatter(raw);
+          var fields = parsed ? parsed.fields : {};
+          var body = parsed ? parsed.body : raw;
+          openItem(f.path, data.sha, false, fields, body);
+          setStatus("");
+        })
+        .catch(function (err) { setStatus(err.message, "error"); });
+    }
+
+    function openItem(path, sha, isNew, fields, body) {
+      local.currentPath = path;
+      var formItem = Object.assign({}, fields, { body: body });
+      var inputs = buildForm(cfg.fields, formItem);
+      showDetail();
+      el.deleteItem.style.display = "none";
+      state.saveHandler = function () {
+        var values = readForm(cfg.fields, inputs);
+        var err = cfg.validate ? cfg.validate(values) : null;
+        if (err) { setStatus(err, "error"); return; }
+        var body2 = values.body;
+        delete values.body;
+        var content = Object.keys(values).length
+          ? serializeFrontmatter(values, body2)
+          : body2.replace(/\s+$/, "") + "\n";
+        setStatus("Saving...");
+        putFile(path, isNew ? null : sha, content, (isNew ? "Add" : "Edit") + " " + cfg.itemNoun + ": " + path)
+          .then(function (res) {
+            sha = res.content.sha;
+            isNew = false;
+            state.dirty = false;
+            setStatus("Saved.", "ok");
+            return load().then(function () {
+              local.currentPath = path;
+              renderList();
+            });
+          })
+          .catch(function (err2) { setStatus(err2.message, "error"); });
+      };
+      state.dirty = isNew;
+      renderList();
+    }
+
+    function newItem() {
+      if (!confirmDiscardIfDirty()) return;
+      var title = prompt(cfg.newPrompt || "Title?");
+      if (!title) return;
+      var slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      if (!slug) return;
+      var path = cfg.contentDir + "/" + slug + ".md";
+      if (local.files.some(function (f) { return f.path === path; })) {
+        alert("A file with that slug already exists.");
+        return;
+      }
+      openItem(path, null, true, cfg.emptyFields ? cfg.emptyFields(title) : { title: title }, "");
+      setStatus("New " + cfg.itemNoun + ", not yet saved.");
+    }
+
+    function load() {
+      if (cfg.allowNew) {
+        el.newItem.textContent = "+ New " + cfg.itemNoun;
+        el.newItem.style.display = "";
+        state.newHandler = newItem;
+      } else {
+        el.newItem.style.display = "none";
+        state.newHandler = null;
+      }
+      hideDetail(cfg.emptyMessage || "Select an item, or create a new one.");
+      setStatus("");
+      local.currentPath = null;
+      return ghFetch("/repos/" + OWNER + "/" + REPO + "/contents/" + cfg.contentDir + "?ref=" + BRANCH)
+        .then(function (items) {
+          local.files = items.filter(function (i) { return i.type === "file"; });
+          renderList();
+        })
+        .catch(function (err) { setStatus(err.message, "error"); });
+    }
+
+    return { load: load };
+  }
+
+  var blogTab = makeMarkdownTab({
+    contentDir: "src/content/blog",
+    itemNoun: "post",
+    allowNew: true,
+    newPrompt: "Post title?",
+    emptyMessage: "Select a post, or create a new one.",
+    emptyFields: function (title) {
+      var today = new Date().toISOString().slice(0, 10);
+      return { title: title, description: "", pubDate: today, tags: [], draft: true };
+    },
+    validate: function (v) {
+      return (v.title && v.description && v.pubDate) ? null
+        : "Title, description, and publish date are required.";
+    },
+    fields: [
+      { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "text" },
+      { key: "pubDate", label: "Publish date", type: "date" },
+      { key: "updatedDate", label: "Updated date (optional)", type: "date", optional: true },
+      { key: "tags", label: "Tags (comma separated)", type: "list" },
+      { key: "draft", label: "Draft", type: "checkbox" },
+      { key: "heroImage", label: "Hero image (optional)", type: "text", optional: true },
+      { key: "canonicalUrl", label: "Canonical URL (optional)", type: "text", optional: true },
+      { key: "body", label: "Body (markdown)", type: "textarea", large: true },
+    ],
+  });
+
+  var pagesTab = makeMarkdownTab({
+    contentDir: "src/content/pages",
+    itemNoun: "page",
+    allowNew: false,
+    emptyMessage: "Select a page below to edit its write-up text. These map 1:1 to hardcoded "
+      + "routes (about, project write-ups), so pages can't be added or removed here.",
+    fields: [
+      { key: "body", label: "Content (markdown)", type: "textarea", large: true },
+    ],
+  });
+
+  // ---- generic JSON-array tab (projects.json / uses.json / socials.json) ----
+
+  function makeJsonArrayTab(cfg) {
+    var local = { path: cfg.path, sha: null, items: [], currentIndex: null };
+
+    function renderList() {
+      el.list.innerHTML = "";
+      local.items.forEach(function (item, idx) {
+        var div = document.createElement("div");
+        div.className = "item" + (local.currentIndex === idx ? " selected" : "");
+        var title = document.createElement("div");
+        title.className = "title";
+        title.textContent = cfg.labelOf(item) || "(untitled)";
+        div.appendChild(title);
+        div.addEventListener("click", function () { openItem(idx); });
+        el.list.appendChild(div);
+      });
+    }
+
+    function saveArray(message) {
+      setStatus("Saving...");
+      return putJsonFile(local.path, local.sha, local.items, message)
+        .then(function (res) {
+          local.sha = res.content.sha;
+          state.dirty = false;
+          setStatus("Saved.", "ok");
+        })
+        .catch(function (err) { setStatus(err.message, "error"); throw err; });
+    }
+
+    function openItem(idx) {
+      if (!confirmDiscardIfDirty()) return;
+      local.currentIndex = idx;
+      var item = local.items[idx];
+      var inputs = buildForm(cfg.fields, item);
+      showDetail();
+      el.deleteItem.style.display = "";
+      state.saveHandler = function () {
+        var values = readForm(cfg.fields, inputs);
+        var err = cfg.validate ? cfg.validate(values, local.items, idx) : null;
+        if (err) { setStatus(err, "error"); return; }
+        local.items[idx] = values;
+        saveArray(cfg.itemNoun + " updated: " + cfg.labelOf(values))
+          .then(function () { renderList(); })
+          .catch(function () {});
+      };
+      state.deleteHandler = function () {
+        if (!confirm("Delete this " + cfg.itemNoun + "? This immediately commits to main.")) return;
+        var removed = local.items.splice(idx, 1)[0];
+        local.currentIndex = null;
+        saveArray(cfg.itemNoun + " deleted: " + cfg.labelOf(removed))
+          .then(function () { hideDetail(); renderList(); })
+          .catch(function () { local.items.splice(idx, 0, removed); });
+      };
+      state.dirty = false;
+      renderList();
+    }
+
+    function newItem() {
+      if (!confirmDiscardIfDirty()) return;
+      local.items.push(cfg.emptyItem());
+      openItem(local.items.length - 1);
+      state.dirty = true;
+      setStatus("New " + cfg.itemNoun + ", not yet saved.");
+    }
+
+    return {
+      load: function () {
+        el.newItem.textContent = "+ New " + cfg.itemNoun;
+        el.newItem.style.display = "";
+        state.newHandler = newItem;
+        hideDetail("Select an item, or create a new one.");
+        setStatus("");
+        local.currentIndex = null;
+        return getJsonFile(local.path)
+          .then(function (res) {
+            local.sha = res.sha;
+            local.items = res.json;
+            renderList();
+          })
+          .catch(function (err) { setStatus(err.message, "error"); });
+      },
+    };
+  }
+
+  var projectsTab = makeJsonArrayTab({
+    path: "src/data/projects.json",
+    itemNoun: "project",
+    labelOf: function (p) { return p.title; },
+    emptyItem: function () {
+      return { slug: "", title: "", description: "", sourceVisibility: "private", technologies: [], featured: false };
+    },
+    validate: function (v, items, idx) {
+      if (!v.slug || !v.title || !v.description) return "Slug, title, and description are required.";
+      if (!/^[a-z0-9-]+$/.test(v.slug)) return "Slug must be lowercase letters, numbers, and hyphens only.";
+      var dup = items.some(function (p, i) { return i !== idx && p.slug === v.slug; });
+      if (dup) return "That slug is already used by another project.";
+      return null;
+    },
+    fields: [
+      { key: "slug", label: "Slug", type: "text",
+        note: "Used in URLs. mybeli, objekt-tools, and objekt-tcg have dedicated write-up pages that look up the project by this exact slug — renaming it breaks that page." },
+      { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "textarea" },
+      { key: "sourceVisibility", label: "Source visibility", type: "select", options: ["public", "private"] },
+      { key: "status", label: "Status (optional)", type: "text", optional: true },
+      { key: "repositoryUrl", label: "Repository URL (optional)", type: "text", optional: true },
+      { key: "liveUrl", label: "Live URL (optional)", type: "text", optional: true },
+      { key: "technologies", label: "Technologies (comma separated)", type: "list" },
+      { key: "screenshots", label: "Screenshots (one path per line, optional)", type: "lines", optional: true,
+        note: "Must reference files that already exist under public/assets/screenshots/ — this tool doesn't upload images." },
+      { key: "featured", label: "Featured on homepage", type: "checkbox" },
+    ],
+  });
+
+  var socialsTab = makeJsonArrayTab({
+    path: "src/data/socials.json",
+    itemNoun: "social link",
+    labelOf: function (s) { return s.label; },
+    emptyItem: function () { return { label: "", href: "" }; },
+    validate: function (v) { return v.label ? null : "Label is required."; },
+    fields: [
+      { key: "label", label: "Label", type: "text" },
+      { key: "href", label: "URL (optional)", type: "text", optional: true },
+      { key: "note", label: "Note (optional, shown instead of a link)", type: "text", optional: true },
+    ],
+  });
+
+  var usesTab = makeJsonArrayTab({
+    path: "src/data/uses.json",
+    itemNoun: "section",
+    labelOf: function (s) { return s.title; },
+    emptyItem: function () { return { title: "", entries: [] }; },
+    validate: function (v) { return v.title ? null : "Section title is required."; },
+    fields: [
+      { key: "title", label: "Section title", type: "text" },
+      { key: "intro", label: "Intro (optional)", type: "text", optional: true },
+      { key: "entries", label: "Entries", type: "entries" },
+    ],
+  });
+
+  // ---- tab: profile (single JSON object, no list) ----
+
+  var profileTab = {
+    load: function () {
+      el.newItem.style.display = "none";
+      state.newHandler = null;
+      hideDetail("Loading...");
+      el.empty.style.display = "none";
+      setStatus("");
+      var sha = null;
+      return getJsonFile("src/data/profile.json")
+        .then(function (res) {
+          sha = res.sha;
+          var fields = [
+            { key: "handle", label: "Handle", type: "text" },
+            { key: "siteLabel", label: "Site label", type: "text" },
+            { key: "site", label: "Site URL", type: "text",
+              note: "Also used as the canonical site URL at build time (astro.config.ts). Changing this affects sitemap/canonical links." },
+            { key: "firstName", label: "First name", type: "text" },
+            { key: "introHeading", label: "Home intro heading", type: "text" },
+            { key: "intro", label: "Home intro", type: "textarea" },
+            { key: "homeBlurb", label: "Home blurb", type: "textarea" },
+            { key: "aboutIntro", label: "About page intro", type: "textarea" },
+            { key: "github", label: "GitHub URL", type: "text" },
+            { key: "sourceRepository", label: "Source repository URL", type: "text" },
+          ];
+          var inputs = buildForm(fields, res.json);
+          showDetail();
+          el.deleteItem.style.display = "none";
+          state.saveHandler = function () {
+            var values = readForm(fields, inputs);
+            if (!values.handle || !values.site || !values.introHeading || !values.intro) {
+              setStatus("Handle, site, intro heading, and intro are required.", "error");
+              return;
+            }
+            setStatus("Saving...");
+            putJsonFile("src/data/profile.json", sha, values, "Update profile")
+              .then(function (res2) {
+                sha = res2.content.sha;
+                state.dirty = false;
+                setStatus("Saved.", "ok");
+              })
+              .catch(function (err) { setStatus(err.message, "error"); });
+          };
+          state.dirty = false;
+        })
+        .catch(function (err) { setStatus(err.message, "error"); });
+    },
+  };
+
+  var TAB_CONTROLLERS = {
+    blog: blogTab,
+    pages: pagesTab,
+    projects: projectsTab,
+    uses: usesTab,
+    profile: profileTab,
+    socials: socialsTab,
+  };
+
+  function switchTab(tab) {
+    if (state.tab === tab) return;
+    if (!confirmDiscardIfDirty()) return;
+    state.tab = tab;
+    state.dirty = false;
+    document.querySelectorAll("nav.tabs button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    el.list.innerHTML = "";
+    hideDetail("Loading...");
+    TAB_CONTROLLERS[tab].load();
+  }
+
+  // ---- auth ----
+
+  function connect() {
+    var token = el.token.value.trim();
+    if (!token) return;
+    state.token = token;
+    el.authError.textContent = "";
+    el.connect.disabled = true;
+    el.connect.textContent = "Connecting...";
+    ghFetch("/repos/" + OWNER + "/" + REPO)
+      .then(function (repo) {
+        if (!repo.permissions || !repo.permissions.push) {
+          throw new Error("Token does not have write access to this repository.");
+        }
+        localStorage.setItem(TOKEN_KEY, token);
+        el.auth.style.display = "none";
+        el.topbar.style.display = "flex";
+        el.app.classList.add("active");
+        return TAB_CONTROLLERS[state.tab].load();
+      })
+      .catch(function (err) {
+        el.authError.textContent = err.message;
+      })
+      .finally(function () {
+        el.connect.disabled = false;
+        el.connect.textContent = "Connect";
+      });
+  }
+
+  function disconnect() {
+    localStorage.removeItem(TOKEN_KEY);
+    location.reload();
+  }
+
+  window.addEventListener("beforeunload", function (e) {
+    if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  el.connect.addEventListener("click", connect);
+  el.token.addEventListener("keydown", function (e) { if (e.key === "Enter") connect(); });
+  el.save.addEventListener("click", function () { if (state.saveHandler) state.saveHandler(); });
+  el.deleteItem.addEventListener("click", function () { if (state.deleteHandler) state.deleteHandler(); });
+  el.newItem.addEventListener("click", function () { if (state.newHandler) state.newHandler(); });
+  el.disconnect.addEventListener("click", disconnect);
+  document.querySelectorAll("nav.tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { switchTab(b.dataset.tab); });
+  });
+
+  var saved = localStorage.getItem(TOKEN_KEY);
+  if (saved) {
+    el.token.value = saved;
+    connect();
+  }
+})();
+</script>
+
+</body>
+</html>

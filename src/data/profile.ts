@@ -1,17 +1,16 @@
-export const profile = {
-  handle: "sharkbeans",
-  siteLabel: "sharkbeans",
-  site: "https://sharkbeans.github.io",
-  firstName: "Juny",
-  introHeading: "Hi, I'm Juny.",
-  intro:
-    "I build practical web products, collector tools, and unusual browser experiences.",
-  homeBlurb:
-    "Project notes, work in progress, my dev setup, and a few smaller experiments.",
-  aboutIntro:
-    "I like building small web systems that stay understandable, useful, and a little bit playful.",
-  github: "https://github.com/sharkbeans",
-  sourceRepository: "https://github.com/sharkbeans/sharkbeans.github.io",
-} as const;
+import profileData from "./profile.json";
 
-export type Profile = typeof profile;
+export type Profile = {
+  handle: string;
+  siteLabel: string;
+  site: string;
+  firstName: string;
+  introHeading: string;
+  intro: string;
+  homeBlurb: string;
+  aboutIntro: string;
+  github: string;
+  sourceRepository: string;
+};
+
+export const profile: Profile = profileData;

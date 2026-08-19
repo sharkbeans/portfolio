@@ -1,0 +1,77 @@
+MyBeli exists to replace a fragile catalog workflow: manually edited PDFs that need to be
+re-exported and resent every time a product, price, or stock count changes.
+
+## What it is for
+
+The target users are small shop owners who need a current public catalog and a lightweight
+management surface behind it. Instead of treating every client as a separate hand-built site,
+MyBeli is designed as one system serving multiple independent shops.
+
+## What it does
+
+- Publishes a public web catalog that stays current without resending PDFs.
+- Provides product and inventory management for each shop owner.
+- Supports multiple independent client shops in one platform.
+- Allows branded subdomains such as `shopname.mybeli.my`.
+- Imports and versions product catalogs from Excel workbooks, with strict validation and a
+  confirm-before-apply diff so a shop owner can see exactly what a spreadsheet upload will
+  change before it goes live.
+- Lets a customer submit an order or quote request straight from the catalog, which the shop
+  owner can turn into a formal quote document for the customer to review and accept.
+
+## Multi-tenant shape
+
+The public-safe version of the architecture is straightforward: each shop has its own catalog
+identity, product set, and management workflow, while the application still behaves like one
+shared system. Every client runs from the same codebase and image, deployed separately with
+Docker Compose behind nginx, each with its own PostgreSQL database. There is no shared
+row-level multi-tenancy, which keeps one client's data fully isolated from another's. That
+keeps onboarding and maintenance much simpler than running a custom codebase for every client.
+
+## The platform site
+
+The apex domain, `mybeli.my`, is a special case of the same client model: it runs
+the public landing page instead of redirecting straight into a catalog. Scrolling the landing
+page previews the live demo catalog with a "garage door" transition, the same lift/lower page
+transition this portfolio site uses for its own project pages, borrowed over because it turned
+out to be a good fit for revealing a catalog underneath a landing page too.
+
+## Provisioning pipeline
+
+Adding a client isn't a manual deploy. A push to `main` runs manifest validation and
+a dry-run reconciliation in CI, builds the application image, and pushes it to a registry
+pinned by immutable digest. On the server, a staged pipeline then reconciles every active
+client manifest in a fixed order: provision the database, apply runtime configuration, cut
+over the public hostname, publish the release, and activate the client's administrator
+account. Each stage records what it has already done, so a failed run can be retried safely
+without redoing finished work or double-provisioning a client.
+
+A manifest validator rejects anything secret-shaped, meaning a value that looks like a
+password, API token, or email address, at CI time, before it can even be merged. Real secrets
+live only on the server, never in the repository.
+
+## Technical notes
+
+MyBeli is a Phoenix LiveView application (Elixir, Phoenix, Ecto, PostgreSQL), started from an
+open-source <a href="https://github.com/RisPNG/phoexnip" target="_blank" rel="noreferrer">Phoenix template</a>
+rather than a homegrown web stack, deployed as one Docker image reused across every client and
+configured entirely at runtime through environment variables
+(client slug, host, database URL, upload path). It's built and maintained together with
+another developer. I have deliberately left deployment credentials and customer data out of
+this public page.
+
+<p class="note-box">The source repository is private.</p>
+
+<figure>
+  <img class="frame-image" src="/assets/screenshots/mybeli-catalog.jpg" alt="Screenshot of the public MyBeli demo catalog, showing a searchable product grid with names and prices.">
+  <figcaption>The public demo catalog: the same view a shop's customers see, running on the demo shop instance.</figcaption>
+</figure>
+
+<figure>
+  <img class="frame-image" src="/assets/screenshots/mybeli-architecture.svg" alt="Architecture diagram showing branded shop subdomains pointing into a shared multi-tenant application.">
+  <figcaption>Public-safe architecture sketch for the shared multi-tenant model.</figcaption>
+</figure>
+
+## Public links
+
+- Live: <a href="https://mybeli.my" target="_blank" rel="noreferrer">mybeli.my</a>, the platform landing page, which leads into a public demo catalog.
