@@ -11,6 +11,11 @@ export default defineConfig({
   site: profile.site,
   base: "/",
   output: "static",
+  // GitHub Pages 301-redirects extensionless paths like /projects to
+  // /projects/ (the static build always emits path/index.html). Matching
+  // that here makes astro dev redirect the same way, so a missing trailing
+  // slash shows up locally instead of only as an extra round trip in prod.
+  trailingSlash: "always",
   // Every page is tiny and static, so prefetching everything in view removes
   // the fetch-then-transition dead time that otherwise shows up as a stall
   // before the view transition starts (worst on the nav wheel, which has no

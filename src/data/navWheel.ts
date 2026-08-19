@@ -48,7 +48,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "projects",
     label: "projects",
-    href: `${base}projects`,
+    href: `${base}projects/`,
     caption: "full archive and case studies",
     icon: [
       "............",
@@ -68,7 +68,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "objekt-tools",
     label: "objekt.my",
-    href: `${base}projects/objekt-tools`,
+    href: `${base}projects/objekt-tools/`,
     caption: "collector tooling for Cosmo objekts",
     icon: [
       "............",
@@ -88,7 +88,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "objekt-tcg",
     label: "objekt tcg",
-    href: `${base}projects/objekt-tcg`,
+    href: `${base}projects/objekt-tcg/`,
     caption: "pack opening and card generation",
     icon: [
       "............",
@@ -108,7 +108,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "mybeli",
     label: "mybeli",
-    href: `${base}projects/mybeli`,
+    href: `${base}projects/mybeli/`,
     caption: "multi-tenant catalog for small shops",
     icon: [
       "............",
@@ -128,7 +128,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "blog",
     label: "blog",
-    href: `${base}blog`,
+    href: `${base}blog/`,
     caption: "notes on things that broke and got fixed",
     icon: [
       "............",
@@ -148,7 +148,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "stats",
     label: "stats",
-    href: `${base}stats`,
+    href: `${base}stats/`,
     caption: "contribution graph, languages, commit clock",
     icon: [
       "............",
@@ -168,7 +168,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "uses",
     label: "uses",
-    href: `${base}uses`,
+    href: `${base}uses/`,
     caption: "software, editors, desk and hardware",
     icon: [
       "....####....",
@@ -188,7 +188,7 @@ export const navWheelEntries: NavWheelEntry[] = [
   {
     id: "about",
     label: "about",
-    href: `${base}about`,
+    href: `${base}about/`,
     caption: "first name only, and where else to find me",
     icon: [
       "............",

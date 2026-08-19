@@ -44,7 +44,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
                 <span>{objektTools.technologies.join(" / ")}</span>
               </p>
               <p class="inline-links">
-                <a href={`${base}projects/objekt-tools`}>case study</a>
+                <a href={`${base}projects/objekt-tools/`}>case study</a>
                 {objektTools.liveUrl ? (
                   <a href={objektTools.liveUrl} target="_blank" rel="noreferrer">live</a>
                 ) : null}
@@ -70,7 +70,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
                 <span> · source is private</span>
               </p>
               <p class="inline-links">
-                <a href={`${base}projects/mybeli`}>case study</a>
+                <a href={`${base}projects/mybeli/`}>case study</a>
               </p>
             </>
           ) : null}
@@ -87,7 +87,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
         </div>
         <span data-world-spawn="uses" aria-hidden="true"></span>
         <p data-world-solid>
-          Software, editors, and hardware notes. See the <a href={`${base}uses`}>full uses page</a>.
+          Software, editors, and hardware notes. See the <a href={`${base}uses/`}>full uses page</a>.
         </p>
       </section>
 
@@ -97,7 +97,7 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
           <h2 class="section-title">Git activity</h2>
           <ContribGraphMini />
           <p class="inline-links">
-            <a href={`${base}stats`}>full activity, languages &amp; commit clock</a>
+            <a href={`${base}stats/`}>full activity, languages &amp; commit clock</a>
           </p>
         </article>
         <span data-world-spawn="github-stats" aria-hidden="true"></span>
@@ -121,16 +121,16 @@ const mybeli = featuredProjects.find((project) => project.slug === "mybeli");
         </div>
         <ul class="plain-list route-list" data-world-solid>
           <li>
-            <a href={`${base}projects`}>/projects</a> for the full archive and case studies.
+            <a href={`${base}projects/`}>/projects</a> for the full archive and case studies.
           </li>
           <li>
-            <a href={`${base}stats`}>/stats</a> for GitHub activity and language stats.
+            <a href={`${base}stats/`}>/stats</a> for GitHub activity and language stats.
           </li>
           <li>
-            <a href={`${base}uses`}>/uses</a> for software and hardware notes.
+            <a href={`${base}uses/`}>/uses</a> for software and hardware notes.
           </li>
           <li>
-            <a href={`${base}about`} data-world-interactable="about">/about</a> for a short
+            <a href={`${base}about/`} data-world-interactable="about">/about</a> for a short
             first-name-only introduction.
           </li>
         </ul>

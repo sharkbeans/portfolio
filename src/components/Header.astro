@@ -13,11 +13,11 @@ const pageLabel = pathname === base ? "home" : pathname.slice(base.length).repla
 
 const navItems = [
   { href: base, label: "home" },
-  { href: `${base}projects`, label: "projects" },
-  { href: `${base}blog`, label: "blog" },
-  { href: `${base}stats`, label: "stats" },
-  { href: `${base}uses`, label: "uses" },
-  { href: `${base}about`, label: "about" },
+  { href: `${base}projects/`, label: "projects" },
+  { href: `${base}blog/`, label: "blog" },
+  { href: `${base}stats/`, label: "stats" },
+  { href: `${base}uses/`, label: "uses" },
+  { href: `${base}about/`, label: "about" },
 ];
 ---
 
@@ -36,7 +36,7 @@ const navItems = [
             const isActive =
               item.href === base
                 ? pathname === base
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : pathname === item.href || pathname.startsWith(item.href);
 
             return (
               <li>
