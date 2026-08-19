@@ -17,7 +17,9 @@
       "Redis"
     ],
     "featured": true,
-    "screenshots": ["/assets/screenshots/objekt-tools-overview.png"]
+    "screenshots": [
+      "/assets/screenshots/objekt-tools-overview.png"
+    ]
   },
   {
     "slug": "mybeli",
@@ -45,7 +47,7 @@
     "title": "objekt-tcg",
     "description": "An abandoned side experiment: TCG-style pack opening for Cosmo objekt collectors, mostly built as an excuse to play with real-time 3D (.glb model) rendering in the browser.",
     "sourceVisibility": "private",
-    "status": "Abandoned / experiment",
+    "status": "experiment",
     "technologies": [
       "TypeScript",
       "Next.js",
