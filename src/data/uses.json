@@ -34,19 +34,15 @@
       },
       {
         "name": "Database / ORM",
-        "detail": "PostgreSQL, Drizzle ORM"
+        "detail": "PostgreSQL, Drizzle"
       },
       {
         "name": "Styling",
-        "detail": "Tailwind CSS"
-      },
-      {
-        "name": "Game-flavored web experiments",
-        "detail": "KAPLAY"
+        "detail": "Tailwind"
       },
       {
         "name": "Terminal",
-        "detail": "VS Code integrated terminal"
+        "detail": "VSCode"
       },
       {
         "name": "Fonts",
