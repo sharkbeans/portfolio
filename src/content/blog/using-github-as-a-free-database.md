@@ -1,0 +1,60 @@
+---
+title: "using github as a free database"
+description: "lets squish the entire db into a painfully long json file"
+pubDate: 2026-08-19
+tags:
+  - sql
+draft: true
+---
+
+The editor that publishes this site is already a database client. It asks GitHub for a file, hands me a form, and writes the file back as a commit. No server, no database, no hosting bill. Once you've done that once, the obvious thought arrives: if this works for blog posts, what stops it from working for anything else?
+
+Mostly nothing. But the thing I got wrong was *which half* was going to be difficult.
+
+## what i assumed
+
+My mental model was that writes would be the fragile part. Two people editing at once, last-write-wins, someone's order silently vanishing. And that reads would be trivial, because it's a public file on a CDN — of course you can read a public file.
+
+Both of those are wrong, and they're wrong in opposite directions.
+
+## writes are already solved, and i didn't notice
+
+GitHub's contents API won't let you update a file unless you tell it the blob SHA you think you're replacing. Get it right and the commit lands. Get it wrong — because someone else committed in between — and you get a `409 Conflict` instead of a commit.
+
+That's compare-and-swap. It's the same primitive a real database gives you for optimistic concurrency, and it's on by default. You cannot silently clobber someone else's write, because the API refuses to accept a write built on a stale read. The failure mode isn't lost data, it's a rejected request you can retry against fresh state.
+
+I'd been writing that in my own editor for weeks — `putFile(path, sha, ...)` — and had filed the `sha` argument under "annoying ceremony" rather than "this is the entire consistency story."
+
+## reads are where it actually gets expensive
+
+Here's where the free lunch gets itemised. There are three ways to read a file back out, and I measured all three against this site's own repo.
+
+The unauthenticated contents API is rate limited to **60 requests per hour, per IP**. That's a hard ceiling of one poll per minute, shared across every tab that visitor has open. It is not "live" by any definition.
+
+`raw.githubusercontent.com` isn't rate limited the same way, because it's a CDN rather than the API — but it comes back with `cache-control: max-age=300`. Five minutes stale. Fine for a config file, useless for anything that's supposed to feel current.
+
+The authenticated contents API gets **5,000 requests per hour**, which sounds generous but still only buys you a poll every 0.72 seconds if you spend it naively. Except you don't have to spend it. Conditional requests — send the `ETag` you already have as `If-None-Match` — come back `304 Not Modified`, and GitHub's own docs are explicit that a 304 doesn't count against your primary rate limit when you're correctly authorized.
+
+So the polling budget isn't 5,000 requests. It's 5,000 *changes*. Nothing happening costs nothing. You can sit there checking every two seconds forever, and only pay when there's actually news.
+
+## the websocket thing
+
+I'd been describing this to myself as "use websockets to keep it live," which turns out to be a sentence with no implementation behind it. GitHub does not push. There's no subscribe endpoint, no socket to open, nothing that will tell your browser a file changed. Webhooks exist and they push properly — to a server, which is the exact thing this whole idea was built to avoid.
+
+So "live" here means polling that's cheap enough to be indistinguishable from live, which the 304 trick genuinely gets you to. It just has to be honest about what it is.
+
+The sting in that: cheap polling requires authentication, and authentication in a static page means a token in the browser. Which is fine when the only person holding it is me, and completely unacceptable the moment I imagine handing this to strangers. That single constraint decides the shape of the whole thing — v1 is a tool for authenticated people, not a public app, and pretending otherwise just means shipping my write access to everyone.
+
+## what it still can't do
+
+There's a 2016 post, [Git as a NoSQL Database](https://news.ycombinator.com/item?id=26703808), whose comment section is worth more than the post. The objection that lands hardest: git gives you key-based lookup and nothing else. No indexes, no queries, no `WHERE`. Any question more interesting than "give me this path" is a full recursive scan.
+
+For what I'm building that's survivable, because the entire dataset is one JSON file small enough to load whole and filter in memory. Git isn't the query engine; the client is. That stops being true somewhere around a few megabytes, and when it does, the answer isn't to get cleverer — it's to leave. The thread points at [Dolt](https://github.com/dolthub/dolt) for an actual SQL database with git semantics, and Irmin and Fossil for adjacent takes on the same idea.
+
+The other real objection is that commits are a coarse audit log. If you snapshot on a schedule, everything that happened between snapshots collapses into one commit with one author. That's a genuine problem for the "free audit trail" pitch — though less so here, since every write is a discrete user action producing its own commit, rather than a periodic dump.
+
+## v1 plans
+
+One JSON file that will eventually go painfully long as the table. Optimistic concurrency for free, courtesy of the SHA check I'd been ignoring. ETag polling every couple of seconds for reads, which costs nothing until something actually changes. Authenticated users only, because the token has to live somewhere and a public page is not that somewhere.
+
+That's a real CRUD app with no server and no bill, and a very specific ceiling that I now know the shape of before building into it rather than after.
