@@ -11,6 +11,14 @@ export default defineConfig({
   site: profile.site,
   base: "/",
   output: "static",
+  // Every page is tiny and static, so prefetching everything in view removes
+  // the fetch-then-transition dead time that otherwise shows up as a stall
+  // before the view transition starts (worst on the nav wheel, which has no
+  // hover phase before it commits).
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "viewport",
+  },
   integrations: [mdx(), sitemap()],
   markdown: {
     processor: unified({

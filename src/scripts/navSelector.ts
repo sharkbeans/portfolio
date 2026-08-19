@@ -1,3 +1,4 @@
+import { prefetch } from "astro:prefetch";
 import { navigate } from "astro:transitions/client";
 
 import { findNavWheelIndex, navWheelEntries } from "../data/navWheel";
@@ -90,6 +91,12 @@ export function initNavSelector(root: HTMLElement): () => void {
   const count = navWheelEntries.length;
 
   if (cardEls.length !== count) return () => {};
+
+  // The cards are buttons, not <a> links, so Astro's viewport-prefetch scan
+  // never sees them. Warming every destination as soon as the selector boots
+  // means a fast open-scroll-release never outruns the fetch — by the time
+  // `commit()` calls navigate(), the page is already cached.
+  for (const entry of navWheelEntries) prefetch(entry.href);
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const homeIndex = findNavWheelIndex(window.location.pathname);
