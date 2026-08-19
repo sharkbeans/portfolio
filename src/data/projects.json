@@ -2,7 +2,7 @@
   {
     "slug": "objekt-tools",
     "title": "objekt.my / objekt-tools",
-    "description": "A public TypeScript project for <a href=\"https://play.google.com/store/apps/details?id=com.modhaus.cosmo&hl=en>\"Cosmo</a> Objekt collectors with tools for trades, lists, collection tracking, custom card generation, proofshots, and random spins.",
+    "description": "A public TypeScript project for <a href=\"https://play.google.com/store/apps/details?id=com.modhaus.cosmo&hl=en\">Cosmo</a> Objekt collectors with tools for trades, lists, collection tracking, custom card generation, proofshots, and random spins.",
     "sourceVisibility": "public",
     "status": "Active",
     "repositoryUrl": "https://github.com/sharkbeans/objekt-tools",
