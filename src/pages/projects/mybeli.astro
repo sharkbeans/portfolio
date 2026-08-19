@@ -35,6 +35,10 @@ const base = import.meta.env.BASE_URL;
       confirm-before-apply diff so a shop owner can see exactly what a spreadsheet upload will
       change before it goes live.
     </li>
+    <li>
+      Lets a customer submit an order or quote request straight from the catalog, which the shop
+      owner can turn into a formal quote document for the customer to review and accept.
+    </li>
   </ul>
 
   <h2>Multi-tenant shape</h2>
@@ -56,12 +60,34 @@ const base = import.meta.env.BASE_URL;
     out to be a good fit for revealing a catalog underneath a landing page too.
   </p>
 
+  <h2>Provisioning pipeline</h2>
+  <p>
+    Adding a client isn't a manual deploy. A push to <code>main</code> runs manifest validation and
+    a dry-run reconciliation in CI, builds the application image, and pushes it to a registry
+    pinned by immutable digest. On the server, a staged pipeline then reconciles every active
+    client manifest in a fixed order: provision the database, apply runtime configuration, cut
+    over the public hostname, publish the release, and activate the client's administrator
+    account. Each stage records what it has already done, so a failed run can be retried safely
+    without redoing finished work or double-provisioning a client.
+  </p>
+  <p>
+    A manifest validator rejects anything secret-shaped, meaning a value that looks like a
+    password, API token, or email address, at CI time, before it can even be merged. Real secrets
+    live only on the server, never in the repository.
+  </p>
+
   <h2>Technical notes</h2>
   <p>
-    MyBeli is a Phoenix LiveView application (Elixir, Phoenix, Ecto, PostgreSQL), deployed as one
-    Docker image reused across every client and configured entirely at runtime through environment
-    variables (client slug, host, database URL, upload path). I have deliberately left deployment
-    credentials and customer data out of this public page.
+    MyBeli is a Phoenix LiveView application (Elixir, Phoenix, Ecto, PostgreSQL), started from an
+    open-source
+    <a href="https://github.com/RisPNG/phoexnip" target="_blank" rel="noreferrer"
+      > Phoenix template </a
+    >
+    rather than a homegrown web stack, deployed as one Docker image reused across every client and
+    configured entirely at runtime through environment variables
+    (client slug, host, database URL, upload path). It's built and maintained together with
+    another developer. I have deliberately left deployment credentials and customer data out of
+    this public page.
   </p>
 
   <p class="note-box">

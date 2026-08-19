@@ -1,0 +1,181 @@
+---
+interface Props {
+  caption?: string;
+}
+
+const { caption } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const modelUrl = `${base}models/pack-open.glb`;
+---
+
+<figure class="pack-viewer" data-pack-viewer data-model={modelUrl}>
+  <div class="pack-viewer__stage">
+    <canvas class="pack-viewer__canvas" data-pack-canvas aria-hidden="true"></canvas>
+    <p class="pack-viewer__status" data-pack-status>The 3D pack needs JavaScript and WebGL.</p>
+  </div>
+
+  <label class="pack-viewer__scrub" data-pack-scrub hidden>
+    <span>tear open</span>
+    <input type="range" min="0" max="1" step="0.001" value="0" data-pack-progress />
+  </label>
+
+  {caption ? <figcaption>{caption}</figcaption> : null}
+</figure>
+
+<style>
+  .pack-viewer {
+    margin: var(--space-4) 0;
+  }
+
+  .pack-viewer__stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    background: var(--bg-elevated);
+    overflow: hidden;
+  }
+
+  .pack-viewer__canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 400ms ease;
+    /* Vertical stays with the page so the figure never traps a mobile scroll;
+       horizontal is the spin. */
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  /* Set once the scene has rendered its first frame. */
+  .pack-viewer[data-pack-live] .pack-viewer__canvas {
+    opacity: 1;
+    cursor: grab;
+  }
+
+  .pack-viewer[data-pack-live] .pack-viewer__canvas:active {
+    cursor: grabbing;
+  }
+
+  /* Holds the stage's only text - the loading line, or the message left behind
+     when there is no WebGL to fall back from. */
+  .pack-viewer__status {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    margin: 0;
+    padding: var(--space-3);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted, inherit);
+    /* Never intercepts the drag that spins the pack, even while it is showing. */
+    pointer-events: none;
+  }
+
+  /* The class sets display, which would otherwise beat the UA stylesheet's
+     [hidden] { display: none } on specificity and leave this over the canvas. */
+  .pack-viewer__status[hidden] {
+    display: none;
+  }
+
+  .pack-viewer__scrub {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    font-size: 0.85rem;
+  }
+
+  .pack-viewer__scrub input {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pack-viewer__canvas {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import type { PackViewer } from "../scripts/packViewer";
+
+  function hasWebGL(): boolean {
+    try {
+      return Boolean(document.createElement("canvas").getContext("webgl2"));
+    } catch {
+      return false;
+    }
+  }
+
+  function setup(figure: HTMLElement) {
+
+    const canvas = figure.querySelector<HTMLCanvasElement>("[data-pack-canvas]");
+    const scrub = figure.querySelector<HTMLElement>("[data-pack-scrub]");
+    const progressInput = figure.querySelector<HTMLInputElement>("[data-pack-progress]");
+    const status = figure.querySelector<HTMLElement>("[data-pack-status]");
+    const modelUrl = figure.dataset.model;
+    if (!canvas || !scrub || !progressInput || !status || !modelUrl) return;
+
+    let viewer: PackViewer | null = null;
+    let started = false;
+
+    const dispose = () => {
+      observer.disconnect();
+      viewer?.dispose();
+      viewer = null;
+    };
+
+    // three.js and the model are both dead weight on a page nobody scrolls
+    // down. Neither is requested until the figure is close to the viewport,
+    // which also keeps prefetchAll from dragging them onto every other page.
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (started || !entries.some((entry) => entry.isIntersecting)) return;
+        started = true;
+        observer.disconnect();
+
+        status.textContent = "Loading the pack…";
+        try {
+          const { createPackViewer } = await import("../scripts/packViewer");
+          viewer = await createPackViewer({
+            canvas,
+            modelUrl,
+            progressInput,
+            reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+            onLoad: () => {
+              status.hidden = true;
+              scrub.hidden = false;
+              canvas.removeAttribute("aria-hidden");
+              figure.dataset.packLive = "";
+            },
+          });
+        } catch (error) {
+          console.error("[pack-viewer] failed to start", error);
+          status.textContent = "The 3D pack failed to load in this browser.";
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(figure);
+    document.addEventListener("astro:before-swap", dispose, { once: true });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    const webgl = hasWebGL();
+    for (const figure of document.querySelectorAll<HTMLElement>("[data-pack-viewer]")) {
+      if (!webgl) {
+        const status = figure.querySelector<HTMLElement>("[data-pack-status]");
+        if (status) status.textContent = "This browser can't render the 3D pack.";
+        continue;
+      }
+      setup(figure);
+    }
+  });
+</script>

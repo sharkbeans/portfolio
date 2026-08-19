@@ -1,14 +1,13 @@
 ---
 import { projects } from "../../data/projects";
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
+import PackViewer from "../../components/PackViewer.astro";
 
 const project = projects.find((entry) => entry.slug === "objekt-tcg");
 
 if (!project) {
   throw new Error("Missing project data for objekt-tcg");
 }
-
-const base = import.meta.env.BASE_URL;
 ---
 
 <ProjectLayout project={project}>
@@ -38,24 +37,13 @@ const base = import.meta.env.BASE_URL;
   </p>
 
   <h2>Why it stopped</h2>
-  <p>
-    It stayed a solo experiment rather than a real spinoff, worth keeping around as a record of
-    playing with a rendering stack outside the usual web app work, not as a live product.
-  </p>
+  <p>It was against Cosmo's ToS.</p>
 
   <p class="note-box">
     The source repository is private, and there's no live deployment.
   </p>
 
-  <figure>
-    <img
-      class="frame-image"
-      src={`${base}assets/screenshots/objekt-tcg-pack.png`}
-      alt="Screenshot of the objekt-tcg pack-opening scene: a rendered TRIPLES pack from the Atom02 Premier set, ready to be torn open."
-    />
-    <figcaption>
-      The pack-opening scene, from a local dev run: this is a still frame of what's normally a
-      scrubbable 3D animation.
-    </figcaption>
-  </figure>
+  <PackViewer
+    caption="The real thing, not a screenshot: this is the project's own pack-open.glb, running in your browser. Drag to spin it all the way round — the app itself clamps the pack to a small tilt — and use the slider to scrub the tear open. The stickers and card art live in the app, so what you get here is the bare foil pack."
+  />
 </ProjectLayout>

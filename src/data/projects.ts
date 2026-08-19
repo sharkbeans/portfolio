@@ -71,7 +71,6 @@ export const projects: Project[] = [
       "PostgreSQL",
     ],
     featured: false,
-    screenshots: ["/assets/screenshots/objekt-tcg-pack.png"],
   },
   {
     slug: "retrocam",
