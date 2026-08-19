@@ -18,6 +18,26 @@ html {
   overscroll-behavior: none;
 }
 
+/* No visible scrollbars anywhere. A classic scrollbar is laid out inside the
+   viewport, so it appeared on long pages and vanished on short ones, moving
+   the centred column and the viewport-anchored nav selector by its width
+   between pages. Hiding it costs nothing here — wheel, touch, keys and
+   programmatic scrolling all still work — and every page now measures the
+   same. Applies to inner scroll containers (code blocks, tables) too, so
+   they cannot introduce the same shift. */
+*,
+*::before,
+*::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 body {
   position: relative;
   margin: 0;
