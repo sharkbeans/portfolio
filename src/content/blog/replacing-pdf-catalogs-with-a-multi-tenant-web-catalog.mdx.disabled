@@ -1,12 +1,12 @@
 ---
-title: Replacing PDF catalogs with a multi-tenant web catalog
-description: How MyBeli turns a PDF-and-resend workflow into a public catalog that updates itself, and what it took to serve many shops from one app.
+title: "Replacing PDF catalogs with a multi-tenant web catalog"
+description: "How MyBeli turns a catalogue-final-v5(3).pdf workflow into a public catalog that updates itself"
 pubDate: 2026-08-12
 tags:
   - elixir
   - product-design
   - multi-tenant
-draft: false
+draft: true
 ---
 
 The problem MyBeli set out to fix is small and specific: a shop owner updates a price or a stock
