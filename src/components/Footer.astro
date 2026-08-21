@@ -1,12 +1,12 @@
 ---
 import { profile } from "../data/profile";
 
-const spriteUrl = `${import.meta.env.BASE_URL}assets/sprites/player.png`;
+const spriteUrl = `${import.meta.env.BASE_URL}assets/logo/logo-blink.png`;
 ---
 
 <footer class="site-footer">
   <p class="site-footer__brand">
-    <span class="footer-sprite" aria-hidden="true"></span>
+    <span class="footer-mark" aria-hidden="true"></span>
     <strong>{profile.handle}</strong> on the web.
   </p>
   <p>
@@ -21,24 +21,32 @@ const spriteUrl = `${import.meta.env.BASE_URL}assets/sprites/player.png`;
     gap: 0.6rem;
   }
 
-  .footer-sprite {
+  /* Two 64px frames side by side, drawn at 32px so the mark stays sharp on
+     hi-dpi screens. steps(2) holds each frame for half of --logo-blink-cycle,
+     matching the favicon's blink in src/scripts/animatedFavicon.ts. */
+  .footer-mark {
     display: inline-block;
     width: 32px;
     height: 32px;
     background-image: var(--spriteUrl);
     background-repeat: no-repeat;
-    background-size: 128px 128px;
+    background-size: 64px 32px;
     background-position: 0 0;
-    image-rendering: pixelated;
-    animation: footer-sprite-walk 0.8s steps(4) infinite;
+    animation: footer-mark-blink var(--logo-blink-cycle) steps(2) infinite;
   }
 
-  @keyframes footer-sprite-walk {
+  @keyframes footer-mark-blink {
     from {
       background-position: 0 0;
     }
     to {
-      background-position: -128px 0;
+      background-position: -64px 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-mark {
+      animation: none;
     }
   }
 </style>

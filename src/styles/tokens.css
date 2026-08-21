@@ -10,6 +10,10 @@
   --accent-strong: #ffd479;
   --accent-cyan: #6be3ff;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  /* One full two-frame cycle of the blinking logo mark, so each frame is
+     held for half of it. Keep in step with FAVICON_FRAME_MS in
+     src/scripts/animatedFavicon.ts, which blinks the favicon. */
+  --logo-blink-cycle: 1s;
   --measure: 68ch;
   --radius: 0.25rem;
   --space-1: 0.35rem;
