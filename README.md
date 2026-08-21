@@ -76,14 +76,22 @@ The site is configured with `base: "/"` in [astro.config.ts](astro.config.ts), m
 
 ## Custom-domain setup
 
-The site lives at `https://sharkbeans.github.io`, the root of the GitHub Pages user site, with no custom domain configured. That URL requires the repository to be named exactly `sharkbeans.github.io`; renaming it to anything else would push the site back to a `/repo-name/` subpath and `base` would have to change with it. To move to a custom domain later:
+The site is served at `https://sharkbeans.is-a.dev`, a custom domain registered through [is-a-dev/register](https://github.com/is-a-dev/register). It is still built as the GitHub Pages user site, so the repository must stay named exactly `sharkbeans.github.io`; renaming it would push the site back to a `/repo-name/` subpath and `base` would have to change with it. GitHub redirects the old `sharkbeans.github.io` URL to the custom domain automatically.
 
-1. Replace `site` in [src/data/profile.ts](src/data/profile.ts) with the real domain, and update `siteLabel` to match.
-2. Add a `CNAME` file in `public/` containing only the final domain.
-3. Configure your DNS records to point at GitHub Pages.
-4. Rebuild and redeploy.
+The domain is wired up in four places, and it has to be all four — the DNS record alone only gets requests to GitHub, which then 404s unless Pages recognises the hostname:
 
-`base` already stays `"/"` in that case. Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so those four steps are the whole change, but skipping any of them leaves them pointing at the wrong host.
+1. `site` in [src/data/profile.json](src/data/profile.json) holds the real domain. (`siteLabel` stays `sharkbeans`; it is the display name used for `<title>` and `og:site_name`, not a URL.)
+2. [public/CNAME](public/CNAME) contains only the final domain, so it lands at the root of the build output.
+3. The is-a.dev DNS record `CNAME sharkbeans -> sharkbeans.github.io`, merged upstream.
+4. The Pages custom domain on this repository, set with:
+
+   ```sh
+   gh api -X PUT repos/sharkbeans/sharkbeans.github.io/pages -f cname=sharkbeans.is-a.dev
+   ```
+
+   GitHub provisions the Let's Encrypt certificate after this is set, which takes a few minutes; enforce-HTTPS turns itself off until the certificate is issued and can be turned back on afterwards.
+
+`base` stays `"/"` throughout. Canonical URLs, Open Graph metadata, RSS, the sitemap, and `robots.txt` are all derived from `site` and `base`, so skipping step 1 leaves them pointing at the wrong host even while the domain itself works.
 
 ## Project structure
 
